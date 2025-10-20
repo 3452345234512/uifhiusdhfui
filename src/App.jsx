@@ -488,7 +488,8 @@ function App() {
       {/* Закрепленная панель статистики пула */}
       <div className="sticky top-0 z-50 bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 shadow-2xl mb-8">
         <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-center">
+          {/* Метрики */}
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-center mb-4">
             <div className="bg-white/10 backdrop-blur-sm rounded-lg px-3 py-2">
               <div className="text-white/70 text-xs font-semibold">Мощность пула</div>
               <div className="text-white font-bold text-lg">{totalPoolTH.toLocaleString()} TH</div>
@@ -508,6 +509,30 @@ function App() {
             <div className="bg-white/10 backdrop-blur-sm rounded-lg px-3 py-2">
               <div className="text-white/70 text-xs font-semibold">H2C Цена</div>
               <div className="text-white font-bold text-lg">${tokenPrice.toFixed(2)}</div>
+            </div>
+          </div>
+          
+          {/* Ползунок состава парка */}
+          <div className="bg-white/10 backdrop-blur-sm rounded-lg px-4 py-3">
+            <div className="flex items-center gap-4">
+              <span className="text-white font-semibold text-sm whitespace-nowrap">🖥️ Состав парка:</span>
+              <div className="flex-1">
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={fleetT21Percent}
+                  onChange={(e) => setFleetT21Percent(parseInt(e.target.value))}
+                  className="w-full h-2 rounded-lg appearance-none cursor-pointer"
+                  style={{
+                    background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${fleetT21Percent}%, #10b981 ${fleetT21Percent}%, #10b981 100%)`
+                  }}
+                />
+                <div className="flex justify-between text-xs text-white/90 mt-1">
+                  <span>{fleetT21Percent}% T21 ({(totalPoolTH * fleetT21Percent / 100).toFixed(0)} TH)</span>
+                  <span>{100 - fleetT21Percent}% S21 Pro ({(totalPoolTH * (100 - fleetT21Percent) / 100).toFixed(0)} TH)</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -548,61 +573,35 @@ function App() {
               </div>
             </div>
             
-            {/* Состав парка */}
+            {/* Визуализация состава парка */}
             <div className="bg-white p-4 rounded-lg border-2 border-gray-200">
-              <div className="font-bold text-gray-800 mb-3">📊 Состав парка оборудования:</div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Доля T21 в парке (%)
-                  </label>
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    value={fleetT21Percent}
-                    onChange={(e) => setFleetT21Percent(parseInt(e.target.value))}
-                    className="w-full"
-                  />
-                  <div className="flex justify-between text-xs text-gray-600 mt-1">
-                    <span>{fleetT21Percent}% T21 ({t21TH.toFixed(0)} TH)</span>
-                    <span>{fleetS21Percent}% S21 Pro ({s21TH.toFixed(0)} TH)</span>
-      </div>
+              <div className="font-bold text-gray-800 mb-3">📊 Состав парка (настраивается в шапке ☝️):</div>
+              <div className="flex h-12 rounded-lg overflow-hidden shadow-lg">
+                <div 
+                  className="bg-gradient-to-r from-blue-500 to-blue-600 flex flex-col items-center justify-center text-white font-semibold transition-all"
+                  style={{width: `${fleetT21Percent}%`}}
+                >
+                  {fleetT21Percent > 10 && (
+                    <>
+                      <div className="text-lg">T21</div>
+                      <div className="text-xs">{fleetT21Percent}% ({t21TH.toFixed(0)} TH)</div>
+                    </>
+                  )}
                 </div>
-                
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Общая мощность пула (TH)
-                  </label>
-                  <input
-                    type="number"
-                    step="100"
-                    value={totalPoolTH}
-                    onChange={(e) => setTotalPoolTH(parseInt(e.target.value))}
-                    className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none"
-                  />
-                  <div className="text-xs text-gray-500 mt-1">
-                    {t21Count} × T21 + {s21Count} × S21 Pro
-                  </div>
+                <div 
+                  className="bg-gradient-to-r from-green-500 to-green-600 flex flex-col items-center justify-center text-white font-semibold transition-all"
+                  style={{width: `${fleetS21Percent}%`}}
+                >
+                  {fleetS21Percent > 10 && (
+                    <>
+                      <div className="text-lg">S21 Pro</div>
+                      <div className="text-xs">{fleetS21Percent}% ({s21TH.toFixed(0)} TH)</div>
+                    </>
+                  )}
                 </div>
               </div>
-              
-              {/* Визуализация состава */}
-              <div className="mt-4">
-                <div className="flex h-8 rounded-lg overflow-hidden">
-                  <div 
-                    className="bg-blue-500 flex items-center justify-center text-white text-sm font-semibold"
-                    style={{width: `${fleetT21Percent}%`}}
-                  >
-                    {fleetT21Percent > 15 && `T21: ${fleetT21Percent}%`}
-                  </div>
-                  <div 
-                    className="bg-green-500 flex items-center justify-center text-white text-sm font-semibold"
-                    style={{width: `${fleetS21Percent}%`}}
-                  >
-                    {fleetS21Percent > 15 && `S21 Pro: ${fleetS21Percent}%`}
-                  </div>
-                </div>
+              <div className="mt-3 text-sm text-gray-600 text-center">
+                💡 Измените состав парка с помощью ползунка в верхней панели
               </div>
             </div>
           </div>
@@ -613,7 +612,7 @@ function App() {
               <span className="text-yellow-500">⚡</span> Электроэнергия
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
+      <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Себестоимость ЭЭ (₽/кВт⋅ч)
                 </label>
@@ -626,7 +625,7 @@ function App() {
                 />
                 <div className="text-xs text-gray-500 mt-1">
                   ≈ ${(companyCostEE / usdtRate).toFixed(4)}/кВт⋅ч
-                </div>
+      </div>
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
