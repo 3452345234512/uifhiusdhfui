@@ -906,7 +906,7 @@ function App() {
               <tbody className="divide-y divide-gray-200">
                 {btcScenarios.map((scenario, idx) => {
                   const miningRev = btcPerTHPerDay * scenario.price
-                  const clientCost = (clientCostEE / usdtRate)
+                  const clientCost = (clientCostEE / usdtRate) * energyPerTH // Затраты на ЭЭ за день на 1 TH
                   const netRevenue = miningRev - clientCost
                   const annualRevenue = netRevenue * 365
                   const roi = (annualRevenue / tokenPrice) * 100
