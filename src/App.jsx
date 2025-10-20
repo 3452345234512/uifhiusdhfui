@@ -464,14 +464,8 @@ function App() {
   return (
     <div className="min-h-screen py-8 px-4">
       <div className="max-w-7xl mx-auto">
-        {/* Заголовок */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-2">
-            💎 Калькулятор ROI Майнинга
-          </h1>
-          <p className="text-white/80 text-lg mb-3">
-            Расчёт доходности для компании и инвесторов
-          </p>
+        {/* Информационные карточки */}
+        <div className="mb-8">
           <div className="flex flex-col md:flex-row gap-3 justify-center">
             <div className="bg-white/10 backdrop-blur-sm rounded-xl px-6 py-3">
               <p className="text-white font-semibold">
@@ -730,7 +724,7 @@ function App() {
                 className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-blue-600 hover:to-indigo-700 transition-all shadow-lg whitespace-nowrap"
               >
                 📊 Экспорт Excel (с формулами)
-              </button>
+        </button>
             </div>
           </div>
         </div>
