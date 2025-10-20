@@ -1074,6 +1074,57 @@ function App() {
                           <td className="p-3 text-center">${s21Data.costPerTH.toFixed(2)}</td>
                           <td className="p-3 text-center font-bold text-green-600">${(t21Data.costPerTH - s21Data.costPerTH).toFixed(2)}</td>
                         </tr>
+                        
+                        {/* Блок доходов и расходов */}
+                        <tr className="bg-blue-100 border-b">
+                          <td className="p-3 font-bold text-blue-900" colSpan="4">💰 ДОХОДЫ И РАСХОДЫ (1 TH в день):</td>
+                        </tr>
+                        <tr className="border-b bg-green-50">
+                          <td className="p-3 font-semibold">💵 Доход от майнинга</td>
+                          <td className="p-3 text-center font-bold text-green-700">
+                            ${miningRevenuePerTH.toFixed(5)}/день
+                            <div className="text-xs text-gray-600">${(miningRevenuePerTH * 365).toFixed(2)}/год</div>
+                          </td>
+                          <td className="p-3 text-center font-bold text-green-700">
+                            ${miningRevenuePerTH.toFixed(5)}/день
+                            <div className="text-xs text-gray-600">${(miningRevenuePerTH * 365).toFixed(2)}/год</div>
+                          </td>
+                          <td className="p-3 text-center text-gray-500">Одинаково</td>
+                        </tr>
+                        <tr className="border-b bg-red-50">
+                          <td className="p-3 font-semibold">⚡ Расход на ЭЭ</td>
+                          <td className="p-3 text-center font-bold text-red-700">
+                            ${(clientCostEE / usdtRate * t21Data.energyPerTH).toFixed(5)}/день
+                            <div className="text-xs text-gray-600">${((clientCostEE / usdtRate * t21Data.energyPerTH) * 365).toFixed(2)}/год</div>
+                          </td>
+                          <td className="p-3 text-center font-bold text-red-700">
+                            ${(clientCostEE / usdtRate * s21Data.energyPerTH).toFixed(5)}/день
+                            <div className="text-xs text-gray-600">${((clientCostEE / usdtRate * s21Data.energyPerTH) * 365).toFixed(2)}/год</div>
+                          </td>
+                          <td className="p-3 text-center font-bold text-green-600">
+                            ${((clientCostEE / usdtRate * t21Data.energyPerTH) - (clientCostEE / usdtRate * s21Data.energyPerTH)).toFixed(5)}
+                            <div className="text-xs text-gray-600">S21 Pro эффективнее</div>
+                          </td>
+                        </tr>
+                        <tr className="border-b bg-gradient-to-r from-green-100 to-emerald-100">
+                          <td className="p-3 font-bold text-green-900">✨ Чистая прибыль клиента</td>
+                          <td className="p-3 text-center">
+                            <div className="font-bold text-lg text-green-700">
+                              ${(miningRevenuePerTH - (clientCostEE / usdtRate * t21Data.energyPerTH)).toFixed(5)}/день
+                            </div>
+                            <div className="text-xs text-gray-600">${((miningRevenuePerTH - (clientCostEE / usdtRate * t21Data.energyPerTH)) * 365).toFixed(2)}/год</div>
+                          </td>
+                          <td className="p-3 text-center">
+                            <div className="font-bold text-lg text-green-700">
+                              ${(miningRevenuePerTH - (clientCostEE / usdtRate * s21Data.energyPerTH)).toFixed(5)}/день
+                            </div>
+                            <div className="text-xs text-gray-600">${((miningRevenuePerTH - (clientCostEE / usdtRate * s21Data.energyPerTH)) * 365).toFixed(2)}/год</div>
+                          </td>
+                          <td className="p-3 text-center font-bold text-green-600">
+                            +${((miningRevenuePerTH - (clientCostEE / usdtRate * s21Data.energyPerTH)) - (miningRevenuePerTH - (clientCostEE / usdtRate * t21Data.energyPerTH))).toFixed(5)}/день
+                          </td>
+                        </tr>
+                        
                         <tr className="border-b hover:bg-gray-50">
                           <td className="p-3 font-semibold">Годовой доход ($/TH)</td>
                           <td className="p-3 text-center">${t21Data.currentAnnualRevenue.toFixed(2)}</td>
