@@ -198,13 +198,12 @@ function App() {
     
     text += '📊 ВВОДНЫЕ ПАРАМЕТРЫ:\n\n'
     
-    text += '🖥️ ОБОРУДОВАНИЕ:\n'
-    text += `• Модель: ${currentMiner.name}\n`
-    text += `• Хешрейт: ${currentMiner.hashrate} TH/s\n`
-    text += `• Потребление: ${currentMiner.power} Вт\n`
-    text += `• Цена: $${currentMiner.price.toLocaleString()}\n`
-    text += `• Эффективность: ${currentMiner.efficiency} Вт/TH\n`
-    text += `• Энергопотребление 1 TH: ${energyPerTH.toFixed(3)} кВт/день\n\n`
+    text += '🏢 МАЙНИНГ-ПУЛ:\n'
+    text += `• Общая мощность: ${totalPoolTH.toLocaleString()} TH\n`
+    text += `• Состав: ${fleetT21Percent}% T21 (${t21TH.toFixed(0)} TH) + ${fleetS21Percent}% S21 Pro (${s21TH.toFixed(0)} TH)\n`
+    text += `• Потребление: ${totalPowerMW.toFixed(1)} МВт\n`
+    text += `• Средняя эффективность: ${avgEfficiency.toFixed(1)} Вт/TH\n`
+    text += `• Энергопотребление 1 TH: ${avgEnergyPerTH.toFixed(3)} кВт/день\n\n`
     
     text += '⚡ ЭЛЕКТРОЭНЕРГИЯ:\n'
     text += `• Себестоимость ЭЭ: ${companyCostEE}₽/кВт⋅ч ($${(companyCostEE / usdtRate).toFixed(4)}/кВт⋅ч)\n`
@@ -212,10 +211,10 @@ function App() {
     text += `• Маржа: ${((clientCostEE - companyCostEE) / companyCostEE * 100).toFixed(1)}%\n\n`
     
     text += '💎 ТОКЕНЫ:\n'
-    text += `• Себестоимость 1 TH: $${costPerTH.toFixed(2)}\n`
-    text += `• Продажа 1 TH: $${tokenPrice}\n`
-    text += `• Наценка: ${calculatedMargin.toFixed(1)}%\n`
-    text += `• Прибыль от продажи: $${(tokenPrice - costPerTH).toFixed(2)}\n\n`
+    text += `• Себестоимость 1 TH (средняя): $${avgCostPerTH.toFixed(2)}\n`
+    text += `• Продажа 1 TH: $${tokenPrice.toFixed(2)}\n`
+    text += `• Наценка: ${marginPercent}%\n`
+    text += `• Прибыль от продажи: $${(tokenPrice - avgCostPerTH).toFixed(2)}\n\n`
     
     text += '₿ КУРС BITCOIN:\n'
     text += `• Сейчас: $${btcPriceNow.toLocaleString()} (из ViaBTC API)\n`
@@ -243,7 +242,7 @@ function App() {
     
     btcScenarios.forEach((scenario) => {
       const miningRev = btcPerTHPerDay * scenario.price
-      const clientCost = (clientCostEE / usdtRate) * energyPerTH
+      const clientCost = (clientCostEE / usdtRate) * avgEnergyPerTH
       const netRevenue = miningRev - clientCost
       const annualRevenue = netRevenue * 365
       const roi = (annualRevenue / tokenPrice) * 100
@@ -552,7 +551,7 @@ function App() {
             <div className="bg-white p-4 rounded-lg border-2 border-gray-200">
               <div className="font-bold text-gray-800 mb-3">📊 Состав парка оборудования:</div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
+      <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Доля T21 в парке (%)
                   </label>
@@ -567,7 +566,7 @@ function App() {
                   <div className="flex justify-between text-xs text-gray-600 mt-1">
                     <span>{fleetT21Percent}% T21 ({t21TH.toFixed(0)} TH)</span>
                     <span>{fleetS21Percent}% S21 Pro ({s21TH.toFixed(0)} TH)</span>
-                  </div>
+      </div>
                 </div>
                 
                 <div>
@@ -795,11 +794,11 @@ function App() {
           {/* Кнопка экспорта и ключевые показатели */}
           <div className="mt-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div className="text-sm text-gray-600 bg-blue-50 px-4 py-2 rounded-lg">
-              💡 <strong>Наценка:</strong> {((tokenPrice / costPerTH - 1) * 100).toFixed(1)}% 
+              💡 <strong>Наценка:</strong> {marginPercent}% 
               {' | '}
-              <strong>Прибыль от токена:</strong> ${(tokenPrice - costPerTH).toFixed(2)}
+              <strong>Прибыль от токена:</strong> ${(tokenPrice - avgCostPerTH).toFixed(2)}
               {' | '}
-              <strong>ROI инвестора:</strong> ~{calculatedScenarios[0]?.investorROI.toFixed(1)}% годовых
+              <strong>ROI инвестора:</strong> ~{avgROI.toFixed(1)}% годовых
       </div>
             <div className="flex gap-3 flex-wrap justify-center">
               <button
@@ -807,7 +806,7 @@ function App() {
                 className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-green-600 hover:to-emerald-700 transition-all shadow-lg whitespace-nowrap"
               >
                 📄 Экспорт TXT
-              </button>
+        </button>
               <button
                 onClick={exportToExcel}
                 className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-blue-600 hover:to-indigo-700 transition-all shadow-lg whitespace-nowrap"
@@ -844,10 +843,10 @@ function App() {
                     = Тариф клиента (₽/кВт⋅ч) / Курс USDT × Энергопотребление (кВт/день)
                   </div>
                   <div className="text-blue-700 font-semibold">
-                    = {clientCostEE}₽ / {usdtRate} × {energyPerTH.toFixed(3)} кВт = ${clientCostPerKwh.toFixed(5)}/день
+                    = {clientCostEE}₽ / {usdtRate} × {avgEnergyPerTH.toFixed(3)} кВт = ${clientCostPerKwh.toFixed(5)}/день
                   </div>
                   <div className="text-xs text-gray-600 mt-1">
-                    * Энергопотребление 1 TH = ({currentMiner.power} Вт × 1.1) / {currentMiner.hashrate} TH × 24ч / 1000 = {energyPerTH.toFixed(3)} кВт/день
+                    * Энергопотребление 1 TH (средне) = {avgEnergyPerTH.toFixed(3)} кВт/день
                   </div>
                 </div>
 
@@ -897,7 +896,7 @@ function App() {
                     = Цена асика / Хешрейт асика
                   </div>
                   <div className="text-green-700 font-semibold">
-                    = ${currentMiner.price.toLocaleString()} / {currentMiner.hashrate} TH = ${costPerTH.toFixed(2)}
+                    = Средневзвешенная по пулу = ${avgCostPerTH.toFixed(2)}
                   </div>
                 </div>
 
@@ -907,10 +906,10 @@ function App() {
                     = Цена токена - Себестоимость
                   </div>
                   <div className="text-green-700 font-semibold">
-                    = ${tokenPrice} - ${costPerTH.toFixed(2)} = ${(tokenPrice - costPerTH).toFixed(2)}
+                    = ${tokenPrice.toFixed(2)} - ${avgCostPerTH.toFixed(2)} = ${(tokenPrice - avgCostPerTH).toFixed(2)}
                   </div>
                   <div className="text-xs text-gray-600 mt-1">
-                    Наценка: {calculatedMargin.toFixed(1)}%
+                    Наценка: {marginPercent}%
                   </div>
                 </div>
 
@@ -920,7 +919,7 @@ function App() {
                     = (Тариф клиента - Себестоимость ЭЭ) / Курс × Энергопотребление
                   </div>
                   <div className="text-green-700 font-semibold">
-                    = ({clientCostEE}₽ - {companyCostEE}₽) / {usdtRate} × {energyPerTH.toFixed(3)} кВт = ${(clientCostPerKwh - companyCostPerKwh).toFixed(5)}/день
+                    = ({clientCostEE}₽ - {companyCostEE}₽) / {usdtRate} × {avgEnergyPerTH.toFixed(3)} кВт = ${(clientCostPerKwh - companyCostPerKwh).toFixed(5)}/день
                   </div>
                   <div className="text-xs text-gray-600 mt-1">
                     За год: ${((clientCostPerKwh - companyCostPerKwh) * 365).toFixed(2)}
@@ -933,7 +932,7 @@ function App() {
                     = Прибыль от токена + Прибыль от ЭЭ за год
                   </div>
                   <div className="text-green-700 font-semibold">
-                    = ${(tokenPrice - costPerTH).toFixed(2)} + ${((clientCostPerKwh - companyCostPerKwh) * 365).toFixed(2)} = ${((tokenPrice - costPerTH) + (clientCostPerKwh - companyCostPerKwh) * 365).toFixed(2)}
+                    = ${(tokenPrice - avgCostPerTH).toFixed(2)} + ${((clientCostPerKwh - companyCostPerKwh) * 365).toFixed(2)} = ${((tokenPrice - avgCostPerTH) + (clientCostPerKwh - companyCostPerKwh) * 365).toFixed(2)}
                   </div>
                 </div>
 
@@ -943,7 +942,7 @@ function App() {
                     = (Общий доход / Себестоимость - 1) × 100%
                   </div>
                   <div className="text-xl font-bold">
-                    = (${((tokenPrice - costPerTH) + (clientCostPerKwh - companyCostPerKwh) * 365).toFixed(2)} / ${costPerTH.toFixed(2)} - 1) × 100% = {((((tokenPrice - costPerTH) + (clientCostPerKwh - companyCostPerKwh) * 365) / costPerTH - 1) * 100).toFixed(1)}%
+                    = (${((tokenPrice - avgCostPerTH) + (clientCostPerKwh - companyCostPerKwh) * 365).toFixed(2)} / ${avgCostPerTH.toFixed(2)} - 1) × 100% = {((((tokenPrice - avgCostPerTH) + (clientCostPerKwh - companyCostPerKwh) * 365) / avgCostPerTH - 1) * 100).toFixed(1)}%
                   </div>
                   <div className="text-sm mt-2 opacity-90">
                     Маржа от ЭЭ: {((clientCostEE - companyCostEE) / companyCostEE * 100).toFixed(1)}%
@@ -989,7 +988,7 @@ function App() {
               <tbody className="divide-y divide-gray-200">
                 {btcScenarios.map((scenario, idx) => {
                   const miningRev = btcPerTHPerDay * scenario.price
-                  const clientCost = (clientCostEE / usdtRate) * energyPerTH // Затраты на ЭЭ за день на 1 TH
+                  const clientCost = (clientCostEE / usdtRate) * avgEnergyPerTH // Затраты на ЭЭ за день на 1 TH
                   const netRevenue = miningRev - clientCost
                   const annualRevenue = netRevenue * 365
                   const roi = (annualRevenue / tokenPrice) * 100
@@ -1026,7 +1025,7 @@ function App() {
                 })}
               </tbody>
             </table>
-          </div>
+      </div>
           
           <div className="mt-4 p-4 bg-blue-50 rounded-lg">
             <p className="text-sm text-gray-700">
