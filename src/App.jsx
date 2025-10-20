@@ -1673,7 +1673,7 @@ function App() {
             const now = Date.now()
             const yearAgo = now - 365 * 24 * 60 * 60 * 1000
             
-            const difficultyPoints = historicalData.values
+            const difficultyPoints = historicalData.difficulty
               .filter(p => p.x >= yearAgo)
               .map(p => ({
                 date: new Date(p.x).toLocaleDateString('ru-RU', { month: 'short', day: 'numeric' }),
@@ -1681,7 +1681,7 @@ function App() {
                 difficulty: (p.y / 1e12).toFixed(2), // в триллионах
               }))
             
-            const pricePoints = historicalData.prices
+            const pricePoints = historicalData['market-price']
               .filter(p => p.x >= yearAgo)
               .map(p => ({
                 date: new Date(p.x).toLocaleDateString('ru-RU', { month: 'short', day: 'numeric' }),
