@@ -11,25 +11,25 @@ function App() {
   const [companyCostEE, setCompanyCostEE] = useState(5.4) // Себестоимость ЭЭ (₽/кВт⋅ч)
   const [clientCostEE, setClientCostEE] = useState(6.2) // Продажа ЭЭ клиенту (₽/кВт⋅ч)
   
-  // 2. Токены
-  // Фиксированная наценка 40%
-  const marginPercent = 40
+  // 2. Состав парка оборудования (портфель компании)
+  const [fleetT21Percent, setFleetT21Percent] = useState(52) // % T21 в парке
+  const [totalPoolTH, setTotalPoolTH] = useState(5430) // Общая мощность пула в TH
   
-  // 3. Курс Bitcoin (из ViaBTC API)
+  // 3. Токены
+  const marginPercent = 30 // Фиксированная наценка 30%
+  
+  // 4. Курс Bitcoin (из ViaBTC API)
   const [btcPriceNow, setBtcPriceNow] = useState(106497) // Курс BTC сейчас ($)
   const [btcPriceYear1, setBtcPriceYear1] = useState(150000) // Курс BTC через 1 год ($)
   const [btcPriceYear2, setBtcPriceYear2] = useState(200000) // Курс BTC через 2 года ($)
   
-  // 4. Данные сети (из ViaBTC API)
+  // 5. Данные сети (из ViaBTC API)
   const [networkDifficulty, setNetworkDifficulty] = useState(146.72) // Сложность сети (T)
   const [btcPerTHPerDay, setBtcPerTHPerDay] = useState(0.00000043) // Доход BTC/TH/день
   
-  // Вспомогательные константы (не редактируются пользователем)
+  // Вспомогательные константы
   const usdtRate = 82 // Курс USDT к рублю
   const difficultyGrowth = 47.28 // Рост сложности в год (%)
-  
-  // Выбор оборудования
-  const [selectedMiner, setSelectedMiner] = useState('T21')
   
   // Параметры оборудования
   const miners = {
@@ -43,28 +43,49 @@ function App() {
     'S21Pro': {
       name: 'Antminer S21 Pro',
       hashrate: 245, // TH
-      power: 3675, // Вт (из Excel файла)
-      price: 3900, // USD (из Excel файла)
+      power: 3675, // Вт
+      price: 3900, // USD
       efficiency: 15 // Вт/TH
     }
   }
   
-  const currentMiner = miners[selectedMiner]
+  // РАСЧЁТ СРЕДНЕВЗВЕШЕННЫХ ПОКАЗАТЕЛЕЙ ПУЛА
+  const fleetS21Percent = 100 - fleetT21Percent
   
-  // Расчёт себестоимости на основе выбранного оборудования
-  const costPerTH = currentMiner.price / currentMiner.hashrate
+  // Количество TH каждой модели в пуле
+  const t21TH = (totalPoolTH * fleetT21Percent) / 100
+  const s21TH = (totalPoolTH * fleetS21Percent) / 100
   
-  // Цена продажи 1 TH = себестоимость + 40% наценка
-  const tokenPrice = costPerTH * (1 + marginPercent / 100)
+  // Количество асиков каждой модели
+  const t21Count = Math.ceil(t21TH / miners.T21.hashrate)
+  const s21Count = Math.ceil(s21TH / miners.S21Pro.hashrate)
   
-  const calculatedMargin = ((tokenPrice / costPerTH - 1) * 100)
+  // Средневзвешенная себестоимость 1 TH
+  const t21CostPerTH = miners.T21.price / miners.T21.hashrate
+  const s21CostPerTH = miners.S21Pro.price / miners.S21Pro.hashrate
+  const avgCostPerTH = (t21CostPerTH * fleetT21Percent + s21CostPerTH * fleetS21Percent) / 100
   
-  // Расчётные значения на основе выбранного оборудования
-  // Энергопотребление 1 TH за 24 часа с учётом +10% на инфраструктуру
-  const energyPerTH = (currentMiner.power * 1.1 / currentMiner.hashrate) * 24 / 1000 // кВт/день
-  const companyCostPerKwh = (companyCostEE / usdtRate) * energyPerTH // в $ за день на 1 TH
-  const clientCostPerKwh = (clientCostEE / usdtRate) * energyPerTH // в $ за день на 1 TH
-  const miningRevenuePerTH = btcPerTHPerDay * btcPriceNow // $ в день
+  // Средневзвешенная энергоэффективность (Вт/TH)
+  const avgEfficiency = (miners.T21.efficiency * fleetT21Percent + miners.S21Pro.efficiency * fleetS21Percent) / 100
+  
+  // Общее потребление пула (МВт)
+  const totalPowerMW = ((t21Count * miners.T21.power) + (s21Count * miners.S21Pro.power)) * 1.1 / 1000000
+  
+  // Средневзвешенное энергопотребление 1 TH за 24 часа (кВт/день)
+  const avgEnergyPerTH = (avgEfficiency * 1.1 * 24) / 1000
+  
+  // Цена токена H2C (единая для всех)
+  const tokenPrice = avgCostPerTH * (1 + marginPercent / 100)
+  
+  // Затраты и доходы
+  const companyCostPerKwh = (companyCostEE / usdtRate) * avgEnergyPerTH
+  const clientCostPerKwh = (clientCostEE / usdtRate) * avgEnergyPerTH
+  const miningRevenuePerTH = btcPerTHPerDay * btcPriceNow
+  
+  // Чистый доход клиента (средний по пулу)
+  const avgNetDailyRevenue = miningRevenuePerTH - clientCostPerKwh
+  const avgAnnualRevenue = avgNetDailyRevenue * 365
+  const avgROI = (avgAnnualRevenue / tokenPrice) * 100
   
   // Сценарии Bitcoin
   const btcScenarios = [
@@ -76,30 +97,27 @@ function App() {
     { label: 'Бычий', price: 200000 },
   ]
   
-  // Сценарии продаж
+  // Сценарии продаж (на основе общего пула)
   const scenarios = [
-    { name: 'Базовый', tokens: 17150, asics: 90, thPerAsic: currentMiner.hashrate },
-    { name: 'Средний', tokens: 30000, asics: 158, thPerAsic: currentMiner.hashrate },
-    { name: 'Премиум', tokens: 75000, asics: 395, thPerAsic: currentMiner.hashrate },
+    { name: 'Базовый', totalTH: 1000 },
+    { name: 'Средний', totalTH: 3000 },
+    { name: 'Премиум', totalTH: 10000 },
   ]
 
   // Функция расчёта для одного сценария
-  const calculateScenario = (tokens, asics, thPerAsic) => {
-    const totalTH = asics * thPerAsic
-    
+  const calculateScenario = (scenarioTH) => {
     // 1. Доход от продажи токенов
-    const profitPerToken = tokenPrice - costPerTH
-    const tokenSalesRevenue = tokens * profitPerToken
+    const profitPerToken = tokenPrice - avgCostPerTH
+    const tokenSalesRevenue = scenarioTH * profitPerToken
     
     // 2. Доход от электроэнергии (за год)
-    // Используем стоимость за день (уже умножено на energyPerTH)
     const companyCostPerDay = companyCostPerKwh
     const clientCostPerDay = clientCostPerKwh
     const energyProfitPerTHPerDay = clientCostPerDay - companyCostPerDay
-    const energyProfitPerYear = energyProfitPerTHPerDay * totalTH * 365
+    const energyProfitPerYear = energyProfitPerTHPerDay * scenarioTH * 365
     
     // 3. Инвестиции компании
-    const totalInvestment = asics * thPerAsic * costPerTH
+    const totalInvestment = scenarioTH * avgCostPerTH
     
     // 4. Итоговый доход за год
     const totalRevenueYear1 = tokenSalesRevenue + energyProfitPerYear
@@ -114,9 +132,8 @@ function App() {
     const paybackYears = tokenPrice / investorAnnualRevenue
     
     return {
-      tokens,
-      asics,
-      totalTH,
+      totalTH: scenarioTH,
+      tokens: scenarioTH, // Количество H2C токенов = TH
       totalInvestment,
       tokenSalesRevenue,
       energyProfitPerYear,
@@ -133,9 +150,9 @@ function App() {
   const calculatedScenarios = useMemo(() => {
     return scenarios.map(s => ({
       ...s,
-      ...calculateScenario(s.tokens, s.asics, s.thPerAsic)
+      ...calculateScenario(s.totalTH)
     }))
-  }, [costPerTH, tokenPrice, energyPerTH, companyCostPerKwh, clientCostPerKwh, miningRevenuePerTH])
+  }, [avgCostPerTH, tokenPrice, avgEnergyPerTH, companyCostPerKwh, clientCostPerKwh, miningRevenuePerTH])
 
   // Данные для графика (5 лет) с учётом роста сложности
   const chartData = useMemo(() => {
@@ -468,54 +485,29 @@ function App() {
 
   return (
     <div className="min-h-screen py-8 px-4">
-      {/* Закрепленная панель выбора асика */}
+      {/* Закрепленная панель статистики пула */}
       <div className="sticky top-0 z-50 bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 shadow-2xl mb-8">
         <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            {/* Выбор майнера */}
-            <div className="flex items-center gap-4">
-              <span className="text-white font-bold text-lg">🖥️ Майнер:</span>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setSelectedMiner('T21')}
-                  className={`px-6 py-2 rounded-lg font-semibold transition-all ${
-                    selectedMiner === 'T21'
-                      ? 'bg-white text-purple-700 shadow-lg scale-105'
-                      : 'bg-white/20 text-white hover:bg-white/30'
-                  }`}
-                >
-                  T21 (190 TH)
-                </button>
-                <button
-                  onClick={() => setSelectedMiner('S21Pro')}
-                  className={`px-6 py-2 rounded-lg font-semibold transition-all ${
-                    selectedMiner === 'S21Pro'
-                      ? 'bg-white text-purple-700 shadow-lg scale-105'
-                      : 'bg-white/20 text-white hover:bg-white/30'
-                  }`}
-                >
-                  S21 Pro (245 TH)
-                </button>
-              </div>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-center">
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg px-3 py-2">
+              <div className="text-white/70 text-xs font-semibold">Мощность пула</div>
+              <div className="text-white font-bold text-lg">{totalPoolTH.toLocaleString()} TH</div>
             </div>
-            
-            {/* Информация */}
-            <div className="flex flex-wrap gap-3 text-sm">
-              <div className="bg-white/10 backdrop-blur-sm rounded-lg px-4 py-2">
-                <span className="text-white font-semibold">
-                  ₿ ${btcPriceNow.toLocaleString()}
-                </span>
-              </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-lg px-4 py-2">
-                <span className="text-white font-semibold">
-                  📊 Сложность: {networkDifficulty}T
-                </span>
-              </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-lg px-4 py-2">
-                <span className="text-white font-semibold">
-                  💱 USDT: {usdtRate}₽
-                </span>
-              </div>
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg px-3 py-2">
+              <div className="text-white/70 text-xs font-semibold">Потребление</div>
+              <div className="text-white font-bold text-lg">{totalPowerMW.toFixed(1)} МВт</div>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg px-3 py-2">
+              <div className="text-white/70 text-xs font-semibold">Эффективность</div>
+              <div className="text-white font-bold text-lg">{avgEfficiency.toFixed(1)} Вт/TH</div>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg px-3 py-2">
+              <div className="text-white/70 text-xs font-semibold">₿ Bitcoin</div>
+              <div className="text-white font-bold text-lg">${(btcPriceNow/1000).toFixed(0)}k</div>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg px-3 py-2">
+              <div className="text-white/70 text-xs font-semibold">H2C Цена</div>
+              <div className="text-white font-bold text-lg">${tokenPrice.toFixed(2)}</div>
             </div>
           </div>
         </div>
@@ -527,34 +519,91 @@ function App() {
         <div className="bg-white rounded-2xl shadow-2xl p-6 mb-8">
           <h2 className="text-2xl font-bold mb-6 text-gray-800">⚙️ Вводные параметры</h2>
           
-          {/* 0. ВЫБОР ОБОРУДОВАНИЯ */}
-          <div className="mb-6 bg-gradient-to-r from-indigo-50 to-purple-50 p-4 rounded-xl border-2 border-indigo-200">
-            <h3 className="text-lg font-semibold text-gray-700 mb-3 flex items-center gap-2">
-              <span className="text-indigo-500">🖥️</span> Выбор оборудования
+          {/* 0. СТАТИСТИКА МАЙНИНГ-ПУЛА */}
+          <div className="mb-6 bg-gradient-to-r from-purple-50 via-pink-50 to-indigo-50 p-6 rounded-xl border-2 border-purple-300">
+            <h3 className="text-2xl font-bold text-purple-900 mb-4 flex items-center gap-2">
+              <span>🏢</span> HASH2CASH Mining Pool
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {Object.entries(miners).map(([key, miner]) => (
-                <div
-                  key={key}
-                  onClick={() => setSelectedMiner(key)}
-                  className={`p-4 rounded-lg cursor-pointer transition-all ${
-                    selectedMiner === key
-                      ? 'bg-indigo-600 text-white shadow-lg scale-105'
-                      : 'bg-white border-2 border-gray-300 hover:border-indigo-400'
-                  }`}
-                >
-                  <div className="font-bold text-lg mb-2">{miner.name}</div>
-                  <div className="text-sm space-y-1">
-                    <div>⚡ Хешрейт: {miner.hashrate} TH/s</div>
-                    <div>🔌 Потребление: {miner.power} Вт</div>
-                    <div>💰 Цена: ${miner.price.toLocaleString()}</div>
-                    <div>📊 Эффективность: {miner.efficiency} Вт/TH</div>
-                    <div className="mt-2 pt-2 border-t border-current/20">
-                      <strong>Себестоимость 1 TH: ${(miner.price / miner.hashrate).toFixed(2)}</strong>
-                    </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+              <div className="bg-white p-4 rounded-lg border-2 border-purple-200">
+                <div className="text-sm text-gray-600 mb-1">Общая мощность</div>
+                <div className="text-3xl font-bold text-purple-700">{totalPoolTH.toLocaleString()}</div>
+                <div className="text-xs text-gray-500">TH/s</div>
+              </div>
+              <div className="bg-white p-4 rounded-lg border-2 border-orange-200">
+                <div className="text-sm text-gray-600 mb-1">Потребление</div>
+                <div className="text-3xl font-bold text-orange-700">{totalPowerMW.toFixed(1)}</div>
+                <div className="text-xs text-gray-500">МВт</div>
+              </div>
+              <div className="bg-white p-4 rounded-lg border-2 border-green-200">
+                <div className="text-sm text-gray-600 mb-1">Эффективность</div>
+                <div className="text-3xl font-bold text-green-700">{avgEfficiency.toFixed(1)}</div>
+                <div className="text-xs text-gray-500">Вт/TH (среднее)</div>
+              </div>
+              <div className="bg-white p-4 rounded-lg border-2 border-blue-200">
+                <div className="text-sm text-gray-600 mb-1">₿ Добыто сегодня</div>
+                <div className="text-2xl font-bold text-blue-700">{(btcPerTHPerDay * totalPoolTH).toFixed(6)}</div>
+                <div className="text-xs text-gray-500">BTC/день</div>
+              </div>
+            </div>
+            
+            {/* Состав парка */}
+            <div className="bg-white p-4 rounded-lg border-2 border-gray-200">
+              <div className="font-bold text-gray-800 mb-3">📊 Состав парка оборудования:</div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Доля T21 в парке (%)
+                  </label>
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={fleetT21Percent}
+                    onChange={(e) => setFleetT21Percent(parseInt(e.target.value))}
+                    className="w-full"
+                  />
+                  <div className="flex justify-between text-xs text-gray-600 mt-1">
+                    <span>{fleetT21Percent}% T21 ({t21TH.toFixed(0)} TH)</span>
+                    <span>{fleetS21Percent}% S21 Pro ({s21TH.toFixed(0)} TH)</span>
                   </div>
                 </div>
-              ))}
+                
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Общая мощность пула (TH)
+                  </label>
+                  <input
+                    type="number"
+                    step="100"
+                    value={totalPoolTH}
+                    onChange={(e) => setTotalPoolTH(parseInt(e.target.value))}
+                    className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none"
+                  />
+                  <div className="text-xs text-gray-500 mt-1">
+                    {t21Count} × T21 + {s21Count} × S21 Pro
+                  </div>
+                </div>
+              </div>
+              
+              {/* Визуализация состава */}
+              <div className="mt-4">
+                <div className="flex h-8 rounded-lg overflow-hidden">
+                  <div 
+                    className="bg-blue-500 flex items-center justify-center text-white text-sm font-semibold"
+                    style={{width: `${fleetT21Percent}%`}}
+                  >
+                    {fleetT21Percent > 15 && `T21: ${fleetT21Percent}%`}
+                  </div>
+                  <div 
+                    className="bg-green-500 flex items-center justify-center text-white text-sm font-semibold"
+                    style={{width: `${fleetS21Percent}%`}}
+                  >
+                    {fleetS21Percent > 15 && `S21 Pro: ${fleetS21Percent}%`}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
           
@@ -597,46 +646,54 @@ function App() {
             </div>
           </div>
 
-          {/* 2. ТОКЕНЫ */}
+          {/* 2. ТОКЕН H2C (ЕДИНЫЙ ДЛЯ ВСЕГО ПУЛА) */}
           <div className="mb-6">
             <h3 className="text-lg font-semibold text-gray-700 mb-3 flex items-center gap-2">
-              <span className="text-purple-500">💎</span> Токены (1 TH)
+              <span className="text-purple-500">💎</span> Токен HASH2CASH (H2C)
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="bg-gray-50 p-4 rounded-lg border-2 border-gray-300">
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Себестоимость 1 TH ($)
+                  Средняя себестоимость
                 </label>
                 <div className="text-2xl font-bold text-gray-900">
-                  ${costPerTH.toFixed(2)}
+                  ${avgCostPerTH.toFixed(2)}
                 </div>
                 <div className="text-xs text-gray-500 mt-1">
-                  ${currentMiner.price} / {currentMiner.hashrate} TH
+                  Взвешенная по составу парка
                 </div>
               </div>
               <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-lg border-2 border-purple-300">
                 <label className="block text-sm font-semibold text-purple-700 mb-2">
-                  💰 Продажа 1 TH ($)
+                  💰 Цена 1 H2C
                 </label>
                 <div className="text-3xl font-bold text-purple-700 mb-1">
                   ${tokenPrice.toFixed(2)}
                 </div>
                 <div className="text-xs text-gray-600 mt-1">
-                  Автоматически: себестоимость ${costPerTH.toFixed(2)} + 40% наценка
-                </div>
-                <div className="text-xs text-green-600 font-semibold mt-1">
-                  ✓ Фиксированная наценка {marginPercent}%
+                  1 H2C = 1 TH в пуле
                 </div>
               </div>
               <div className="bg-green-50 p-4 rounded-lg border-2 border-green-300">
                 <label className="block text-sm font-semibold text-green-700 mb-2">
-                  Наша наценка (%)
+                  Наценка компании
                 </label>
                 <div className="text-2xl font-bold text-green-700">
-                  {calculatedMargin.toFixed(1)}%
+                  {marginPercent}%
                 </div>
                 <div className="text-xs text-gray-600 mt-1">
-                  Прибыль: ${(tokenPrice - costPerTH).toFixed(2)}
+                  Прибыль: ${(tokenPrice - avgCostPerTH).toFixed(2)}/TH
+                </div>
+              </div>
+              <div className="bg-blue-50 p-4 rounded-lg border-2 border-blue-300">
+                <label className="block text-sm font-semibold text-blue-700 mb-2">
+                  ROI инвестора
+                </label>
+                <div className="text-2xl font-bold text-blue-700">
+                  {avgROI.toFixed(1)}%
+                </div>
+                <div className="text-xs text-gray-600 mt-1">
+                  ${avgAnnualRevenue.toFixed(2)}/год на 1 H2C
                 </div>
               </div>
             </div>
@@ -1051,224 +1108,160 @@ function App() {
             )
           })()}
 
-          {/* Симулятор оптимальной цены */}
-          <div className="bg-white p-6 rounded-xl border-2 border-purple-300 mb-6">
-            <h3 className="text-xl font-bold text-purple-900 mb-4">🔧 Подбор оптимальной цены (сравнение T21 vs S21 Pro)</h3>
+          {/* Показатели средние по пулу */}
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-6 rounded-xl border-2 border-green-400 mb-6">
+            <h3 className="text-2xl font-bold text-green-900 mb-4">💰 Доходы и расходы (средние по пулу)</h3>
             
-            {(() => {
-              // Функция расчёта для конкретного оборудования
-              const calculateForMiner = (miner, minerName) => {
-                const costPerTH_m = miner.price / miner.hashrate
-                const energyPerTH_m = (miner.power * 1.1 / miner.hashrate) * 24 / 1000
-                const clientCostPerKwh_m = (clientCostEE / usdtRate) * energyPerTH_m
-                const currentAnnualRevenue_m = (miningRevenuePerTH - clientCostPerKwh_m) * 365
-                const calculatedMargin_m = ((tokenPrice / costPerTH_m - 1) * 100)
-                
-                return {
-                  name: minerName,
-                  costPerTH: costPerTH_m,
-                  energyPerTH: energyPerTH_m,
-                  currentAnnualRevenue: currentAnnualRevenue_m,
-                  calculatedMargin: calculatedMargin_m,
-                  minPriceForMargin: costPerTH_m * 1.30,
-                  maxPriceForMargin: costPerTH_m * 1.40,
-                  optimalTokenPriceForRoi: currentAnnualRevenue_m / 0.33,
-                  neededBtcPriceForTarget: ((tokenPrice * 0.33) / 365 + clientCostPerKwh_m) / btcPerTHPerDay,
-                  checkMargin: calculatedMargin_m >= 30 && calculatedMargin_m <= 40,
-                  checkRoi: (currentAnnualRevenue_m / tokenPrice * 100) >= 33
-                }
-              }
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+              <div className="bg-white p-4 rounded-lg border-2 border-green-300">
+                <div className="text-sm text-gray-600 mb-1">💵 Доход от майнинга</div>
+                <div className="text-2xl font-bold text-green-700">${miningRevenuePerTH.toFixed(5)}</div>
+                <div className="text-xs text-gray-500">/TH/день</div>
+                <div className="text-xs text-gray-600 mt-2">${(miningRevenuePerTH * 365).toFixed(2)}/год</div>
+              </div>
               
-              const t21Data = calculateForMiner(miners.T21, 'T21')
-              const s21Data = calculateForMiner(miners.S21Pro, 'S21 Pro')
-              const eeMargin = ((clientCostEE - companyCostEE) / companyCostEE * 100)
+              <div className="bg-white p-4 rounded-lg border-2 border-red-300">
+                <div className="text-sm text-gray-600 mb-1">⚡ Расход на ЭЭ</div>
+                <div className="text-2xl font-bold text-red-700">${clientCostPerKwh.toFixed(5)}</div>
+                <div className="text-xs text-gray-500">/TH/день</div>
+                <div className="text-xs text-gray-600 mt-2">${(clientCostPerKwh * 365).toFixed(2)}/год</div>
+              </div>
               
-              return (
-                <>
-                  {/* Сравнительная таблица T21 vs S21 Pro */}
-                  <div className="overflow-x-auto mb-6">
-                    <table className="w-full border-collapse bg-white rounded-lg overflow-hidden">
-                      <thead className="bg-gradient-to-r from-purple-600 to-pink-600 text-white">
-                        <tr>
-                          <th className="p-3 text-left">Параметр</th>
-                          <th className="p-3 text-center bg-blue-600">{t21Data.name}</th>
-                          <th className="p-3 text-center bg-green-600">{s21Data.name}</th>
-                          <th className="p-3 text-center">Разница</th>
-                        </tr>
-                      </thead>
-                      <tbody className="text-sm">
-                        <tr className="border-b hover:bg-gray-50">
-                          <td className="p-3 font-semibold">Себестоимость 1 TH</td>
-                          <td className="p-3 text-center">${t21Data.costPerTH.toFixed(2)}</td>
-                          <td className="p-3 text-center">${s21Data.costPerTH.toFixed(2)}</td>
-                          <td className="p-3 text-center font-bold text-green-600">${(t21Data.costPerTH - s21Data.costPerTH).toFixed(2)}</td>
-                        </tr>
-                        
-                        {/* Блок доходов и расходов */}
-                        <tr className="bg-blue-100 border-b">
-                          <td className="p-3 font-bold text-blue-900" colSpan="4">💰 ДОХОДЫ И РАСХОДЫ (1 TH в день):</td>
-                        </tr>
-                        <tr className="border-b bg-green-50">
-                          <td className="p-3 font-semibold">💵 Доход от майнинга</td>
-                          <td className="p-3 text-center font-bold text-green-700">
-                            ${miningRevenuePerTH.toFixed(5)}/день
-                            <div className="text-xs text-gray-600">${(miningRevenuePerTH * 365).toFixed(2)}/год</div>
-                          </td>
-                          <td className="p-3 text-center font-bold text-green-700">
-                            ${miningRevenuePerTH.toFixed(5)}/день
-                            <div className="text-xs text-gray-600">${(miningRevenuePerTH * 365).toFixed(2)}/год</div>
-                          </td>
-                          <td className="p-3 text-center text-gray-500">Одинаково</td>
-                        </tr>
-                        <tr className="border-b bg-red-50">
-                          <td className="p-3 font-semibold">⚡ Расход на ЭЭ</td>
-                          <td className="p-3 text-center font-bold text-red-700">
-                            ${(clientCostEE / usdtRate * t21Data.energyPerTH).toFixed(5)}/день
-                            <div className="text-xs text-gray-600">${((clientCostEE / usdtRate * t21Data.energyPerTH) * 365).toFixed(2)}/год</div>
-                          </td>
-                          <td className="p-3 text-center font-bold text-red-700">
-                            ${(clientCostEE / usdtRate * s21Data.energyPerTH).toFixed(5)}/день
-                            <div className="text-xs text-gray-600">${((clientCostEE / usdtRate * s21Data.energyPerTH) * 365).toFixed(2)}/год</div>
-                          </td>
-                          <td className="p-3 text-center font-bold text-green-600">
-                            ${((clientCostEE / usdtRate * t21Data.energyPerTH) - (clientCostEE / usdtRate * s21Data.energyPerTH)).toFixed(5)}
-                            <div className="text-xs text-gray-600">S21 Pro эффективнее</div>
-                          </td>
-                        </tr>
-                        <tr className="border-b bg-gradient-to-r from-green-100 to-emerald-100">
-                          <td className="p-3 font-bold text-green-900">✨ Чистая прибыль клиента</td>
-                          <td className="p-3 text-center">
-                            <div className="font-bold text-lg text-green-700">
-                              ${(miningRevenuePerTH - (clientCostEE / usdtRate * t21Data.energyPerTH)).toFixed(5)}/день
-                            </div>
-                            <div className="text-xs text-gray-600">${((miningRevenuePerTH - (clientCostEE / usdtRate * t21Data.energyPerTH)) * 365).toFixed(2)}/год</div>
-                          </td>
-                          <td className="p-3 text-center">
-                            <div className="font-bold text-lg text-green-700">
-                              ${(miningRevenuePerTH - (clientCostEE / usdtRate * s21Data.energyPerTH)).toFixed(5)}/день
-                            </div>
-                            <div className="text-xs text-gray-600">${((miningRevenuePerTH - (clientCostEE / usdtRate * s21Data.energyPerTH)) * 365).toFixed(2)}/год</div>
-                          </td>
-                          <td className="p-3 text-center font-bold text-green-600">
-                            +${((miningRevenuePerTH - (clientCostEE / usdtRate * s21Data.energyPerTH)) - (miningRevenuePerTH - (clientCostEE / usdtRate * t21Data.energyPerTH))).toFixed(5)}/день
-                          </td>
-                        </tr>
-                        
-                        <tr className="border-b hover:bg-gray-50">
-                          <td className="p-3 font-semibold">Годовой доход ($/TH)</td>
-                          <td className="p-3 text-center">${t21Data.currentAnnualRevenue.toFixed(2)}</td>
-                          <td className="p-3 text-center">${s21Data.currentAnnualRevenue.toFixed(2)}</td>
-                          <td className="p-3 text-center font-bold text-green-600">${(s21Data.currentAnnualRevenue - t21Data.currentAnnualRevenue).toFixed(2)}</td>
-                        </tr>
-                        <tr className="border-b bg-purple-50">
-                          <td className="p-3 font-semibold">Наценка при $${tokenPrice}</td>
-                          <td className={`p-3 text-center font-bold ${t21Data.checkMargin ? 'text-green-600' : 'text-red-600'}`}>
-                            {t21Data.calculatedMargin.toFixed(1)}% {t21Data.checkMargin ? '✅' : '❌'}
-                          </td>
-                          <td className={`p-3 text-center font-bold ${s21Data.checkMargin ? 'text-green-600' : 'text-red-600'}`}>
-                            {s21Data.calculatedMargin.toFixed(1)}% {s21Data.checkMargin ? '✅' : '❌'}
-                          </td>
-                          <td className="p-3 text-center text-gray-500">Цель: 30-40%</td>
-                        </tr>
-                        <tr className="border-b bg-blue-50">
-                          <td className="p-3 font-semibold">ROI клиента при $${tokenPrice}</td>
-                          <td className={`p-3 text-center font-bold ${t21Data.checkRoi ? 'text-green-600' : 'text-red-600'}`}>
-                            {(t21Data.currentAnnualRevenue / tokenPrice * 100).toFixed(1)}% {t21Data.checkRoi ? '✅' : '❌'}
-                          </td>
-                          <td className={`p-3 text-center font-bold ${s21Data.checkRoi ? 'text-green-600' : 'text-red-600'}`}>
-                            {(s21Data.currentAnnualRevenue / tokenPrice * 100).toFixed(1)}% {s21Data.checkRoi ? '✅' : '❌'}
-                          </td>
-                          <td className="p-3 text-center text-gray-500">Цель: ≥33%</td>
-                        </tr>
-                        <tr className="border-b bg-green-50">
-                          <td className="p-3 font-semibold">💰 Для наценки 30%</td>
-                          <td className="p-3 text-center font-bold text-purple-700">${t21Data.minPriceForMargin.toFixed(2)}</td>
-                          <td className="p-3 text-center font-bold text-purple-700">${s21Data.minPriceForMargin.toFixed(2)}</td>
-                          <td className="p-3 text-center text-gray-500">Min цена</td>
-                        </tr>
-                        <tr className="border-b bg-green-50">
-                          <td className="p-3 font-semibold">💰 Для наценки 40%</td>
-                          <td className="p-3 text-center font-bold text-purple-700">${t21Data.maxPriceForMargin.toFixed(2)}</td>
-                          <td className="p-3 text-center font-bold text-purple-700">${s21Data.maxPriceForMargin.toFixed(2)}</td>
-                          <td className="p-3 text-center text-gray-500">Max цена</td>
-                        </tr>
-                        <tr className="border-b bg-yellow-50">
-                          <td className="p-3 font-semibold">🎯 Для ROI 33%</td>
-                          <td className="p-3 text-center font-bold text-blue-700">${t21Data.optimalTokenPriceForRoi.toFixed(2)}</td>
-                          <td className="p-3 text-center font-bold text-blue-700">${s21Data.optimalTokenPriceForRoi.toFixed(2)}</td>
-                          <td className="p-3 text-center text-gray-500">Опт. цена</td>
-                        </tr>
-                        <tr className="bg-orange-50">
-                          <td className="p-3 font-semibold">🚀 Или BTC до:</td>
-                          <td className="p-3 text-center font-bold text-orange-700">${Math.round(t21Data.neededBtcPriceForTarget).toLocaleString()}</td>
-                          <td className="p-3 text-center font-bold text-orange-700">${Math.round(s21Data.neededBtcPriceForTarget).toLocaleString()}</td>
-                          <td className="p-3 text-center text-gray-500">Рост на {((t21Data.neededBtcPriceForTarget / btcPriceNow - 1) * 100).toFixed(0)}%</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-
-                  {/* Итоговые рекомендации */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* T21 */}
-                    <div className={`p-4 rounded-xl border-2 ${t21Data.checkMargin && t21Data.checkRoi ? 'bg-green-50 border-green-500' : 'bg-red-50 border-red-500'}`}>
-                      <h4 className="font-bold text-lg mb-2 flex items-center gap-2">
-                        {t21Data.checkMargin && t21Data.checkRoi ? '✅' : '⚠️'} {t21Data.name}
-                      </h4>
-                      {t21Data.checkMargin && t21Data.checkRoi ? (
-                        <div className="text-green-800">
-                          <div className="font-semibold">Все требования выполнены!</div>
-                          <div className="text-sm mt-1">Цена токена ${tokenPrice} оптимальна</div>
-                        </div>
-                      ) : (
-                        <div className="text-gray-800 space-y-2 text-sm">
-                          {!t21Data.checkMargin && (
-                            <div>❌ Наценка {t21Data.calculatedMargin.toFixed(1)}% (нужно 30-40%)</div>
-                          )}
-                          {!t21Data.checkRoi && (
-                            <div>❌ ROI {(t21Data.currentAnnualRevenue / tokenPrice * 100).toFixed(1)}% (нужно ≥33%)</div>
-                          )}
-                          <div className="font-semibold text-purple-700 mt-2">
-                            💡 Рекомендуемая цена: ${Math.max(t21Data.minPriceForMargin, Math.min(t21Data.maxPriceForMargin, t21Data.optimalTokenPriceForRoi)).toFixed(2)}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* S21 Pro */}
-                    <div className={`p-4 rounded-xl border-2 ${s21Data.checkMargin && s21Data.checkRoi ? 'bg-green-50 border-green-500' : 'bg-red-50 border-red-500'}`}>
-                      <h4 className="font-bold text-lg mb-2 flex items-center gap-2">
-                        {s21Data.checkMargin && s21Data.checkRoi ? '✅' : '⚠️'} {s21Data.name}
-                      </h4>
-                      {s21Data.checkMargin && s21Data.checkRoi ? (
-                        <div className="text-green-800">
-                          <div className="font-semibold">Все требования выполнены!</div>
-                          <div className="text-sm mt-1">Цена токена ${tokenPrice} оптимальна</div>
-                        </div>
-                      ) : (
-                        <div className="text-gray-800 space-y-2 text-sm">
-                          {!s21Data.checkMargin && (
-                            <div>❌ Наценка {s21Data.calculatedMargin.toFixed(1)}% (нужно 30-40%)</div>
-                          )}
-                          {!s21Data.checkRoi && (
-                            <div>❌ ROI {(s21Data.currentAnnualRevenue / tokenPrice * 100).toFixed(1)}% (нужно ≥33%)</div>
-                          )}
-                          <div className="font-semibold text-purple-700 mt-2">
-                            💡 Рекомендуемая цена: ${Math.max(s21Data.minPriceForMargin, Math.min(s21Data.maxPriceForMargin, s21Data.optimalTokenPriceForRoi)).toFixed(2)}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Справка о марже ЭЭ */}
-                  <div className="mt-4 p-3 bg-gray-50 rounded-lg border border-gray-300 text-sm text-gray-700">
-                    <strong>ℹ️ Маржа ЭЭ:</strong> {eeMargin.toFixed(1)}% ({companyCostEE}₽ → {clientCostEE}₽) - не критична, основной доход от продажи токенов.
-                  </div>
-                </>
-              )
-            })()}
+              <div className="bg-gradient-to-r from-emerald-100 to-green-100 p-4 rounded-lg border-2 border-green-500">
+                <div className="text-sm text-gray-600 mb-1">✨ Чистая прибыль</div>
+                <div className="text-3xl font-bold text-green-800">${avgNetDailyRevenue.toFixed(5)}</div>
+                <div className="text-xs text-gray-500">/TH/день</div>
+                <div className="text-xs font-semibold text-green-700 mt-2">${avgAnnualRevenue.toFixed(2)}/год</div>
+              </div>
+            </div>
+            
+            <div className="bg-white p-4 rounded-lg border border-gray-300">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <div className="font-semibold text-gray-700 mb-1">Энергопотребление (средне):</div>
+                  <div className="text-gray-600">{avgEnergyPerTH.toFixed(3)} кВт/день на 1 TH</div>
+                </div>
+                <div>
+                  <div className="font-semibold text-gray-700 mb-1">Маржа ЭЭ:</div>
+                  <div className="text-gray-600">{((clientCostEE - companyCostEE) / companyCostEE * 100).toFixed(1)}% (не критично)</div>
+                </div>
+              </div>
+            </div>
           </div>
+          
+          {/* Проверка требований */}
+          <div className="bg-white p-6 rounded-xl border-2 border-purple-300 mb-6">
+            <h3 className="text-xl font-bold text-purple-900 mb-4">🎯 Проверка целевых показателей</h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+              <div className={`p-4 rounded-lg border-2 ${marginPercent >= 30 && marginPercent <= 40 ? 'bg-green-50 border-green-400' : 'bg-red-50 border-red-400'}`}>
+                <div className="text-sm text-gray-600 mb-1">Наценка компании</div>
+                <div className="text-3xl font-bold text-gray-800">{marginPercent}%</div>
+                <div className="text-xs mt-2">
+                  {marginPercent >= 30 && marginPercent <= 40 ? (
+                    <span className="text-green-700">✅ В рамках целевых 30-40%</span>
+                  ) : (
+                    <span className="text-red-700">❌ Вне диапазона 30-40%</span>
+                  )}
+                </div>
+              </div>
+              
+              <div className={`p-4 rounded-lg border-2 ${avgROI >= 33 ? 'bg-green-50 border-green-400' : 'bg-orange-50 border-orange-400'}`}>
+                <div className="text-sm text-gray-600 mb-1">ROI инвестора</div>
+                <div className="text-3xl font-bold text-gray-800">{avgROI.toFixed(1)}%</div>
+                <div className="text-xs mt-2">
+                  {avgROI >= 33 ? (
+                    <span className="text-green-700">✅ Выше целевых 33%</span>
+                  ) : (
+                    <span className="text-orange-700">⚠️ Ниже целевых 33% (недостаток {(33 - avgROI).toFixed(1)}%)</span>
+                  )}
+                </div>
+              </div>
+              
+              <div className="p-4 rounded-lg border-2 bg-gray-50 border-gray-300">
+                <div className="text-sm text-gray-600 mb-1">Маржа ЭЭ</div>
+                <div className="text-3xl font-bold text-gray-800">{((clientCostEE - companyCostEE) / companyCostEE * 100).toFixed(1)}%</div>
+                <div className="text-xs text-gray-600 mt-2">
+                  ℹ️ Не критично (основной доход от токенов)
+                </div>
+              </div>
+            </div>
+            
+            {/* Рекомендации */}
+            <div className={`p-4 rounded-lg ${avgROI >= 33 && marginPercent >= 30 && marginPercent <= 40 ? 'bg-green-100 border-2 border-green-500' : 'bg-yellow-50 border-2 border-yellow-400'}`}>
+              {avgROI >= 33 && marginPercent >= 30 && marginPercent <= 40 ? (
+                <div>
+                  <div className="font-bold text-green-900 text-lg mb-2">✅ Все требования выполнены!</div>
+                  <div className="text-gray-700">Текущие параметры оптимальны для привлечения инвесторов.</div>
+                </div>
+              ) : (
+                <div>
+                  <div className="font-bold text-orange-900 mb-3">💡 Рекомендации для достижения целей:</div>
+                  <div className="space-y-2 text-sm text-gray-700">
+                    {avgROI < 33 && (
+                      <div className="bg-white p-3 rounded">
+                        <strong>Для ROI 33%:</strong>
+                        <div>• Дождаться роста BTC до ${Math.round(((tokenPrice * 0.33 / 365) + clientCostPerKwh) / btcPerTHPerDay).toLocaleString()}</div>
+                        <div>• Или снизить цену токена до ${(avgAnnualRevenue / 0.33).toFixed(2)}</div>
+                      </div>
+                    )}
+                    {!(marginPercent >= 30 && marginPercent <= 40) && (
+                      <div className="bg-white p-3 rounded">
+                        <strong>Наценка:</strong> Рекомендуем 30-40% для баланса интересов компании и клиентов
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+          
+          {/* Детали парка */}
+          <div className="bg-white p-6 rounded-xl border-2 border-gray-300 mb-6">
+            <h3 className="text-xl font-bold text-gray-800 mb-4">📊 Детали парка оборудования</h3>
+            
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse bg-white rounded-lg overflow-hidden">
+                <thead className="bg-gradient-to-r from-blue-600 to-green-600 text-white">
+                  <tr>
+                    <th className="p-3 text-left">Модель</th>
+                    <th className="p-3 text-center">Доля в парке</th>
+                    <th className="p-3 text-center">Мощность (TH)</th>
+                    <th className="p-3 text-center">Количество</th>
+                    <th className="p-3 text-center">Себестоимость/TH</th>
+                    <th className="p-3 text-center">Эффективность</th>
+                  </tr>
+                </thead>
+                <tbody className="text-sm">
+                  <tr className="bg-blue-50 hover:bg-blue-100">
+                    <td className="p-3 font-semibold">T21</td>
+                    <td className="p-3 text-center font-bold">{fleetT21Percent}%</td>
+                    <td className="p-3 text-center">{t21TH.toFixed(0)} TH</td>
+                    <td className="p-3 text-center">{t21Count} шт</td>
+                    <td className="p-3 text-center">${t21CostPerTH.toFixed(2)}</td>
+                    <td className="p-3 text-center">{miners.T21.efficiency} Вт/TH</td>
+                  </tr>
+                  <tr className="bg-green-50 hover:bg-green-100">
+                    <td className="p-3 font-semibold">S21 Pro</td>
+                    <td className="p-3 text-center font-bold">{fleetS21Percent}%</td>
+                    <td className="p-3 text-center">{s21TH.toFixed(0)} TH</td>
+                    <td className="p-3 text-center">{s21Count} шт</td>
+                    <td className="p-3 text-center">${s21CostPerTH.toFixed(2)}</td>
+                    <td className="p-3 text-center">{miners.S21Pro.efficiency} Вт/TH</td>
+                  </tr>
+                  <tr className="bg-purple-100 font-bold">
+                    <td className="p-3">ИТОГО / СРЕДН</td>
+                    <td className="p-3 text-center">100%</td>
+                    <td className="p-3 text-center">{totalPoolTH.toLocaleString()} TH</td>
+                    <td className="p-3 text-center">{t21Count + s21Count} шт</td>
+                    <td className="p-3 text-center">${avgCostPerTH.toFixed(2)}</td>
+                    <td className="p-3 text-center">{avgEfficiency.toFixed(1)} Вт/TH</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          
 
           {/* Симуляция на 3 года */}
           <div className="bg-white p-6 rounded-xl border-2 border-purple-300">
