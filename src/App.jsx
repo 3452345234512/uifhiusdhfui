@@ -786,55 +786,65 @@ function App() {
             Подберите цену токена для выполнения всех требований к доходности
           </p>
 
-          {/* Блок целевых требований */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            <div className="bg-white p-4 rounded-xl border-2 border-blue-400 shadow-lg">
-              <div className="text-sm text-blue-600 font-semibold mb-2">🎯 ТРЕБОВАНИЕ 1 (критично):</div>
-              <div className="text-xl font-bold text-blue-900 mb-1">ROI клиента ≥33%</div>
-              <div className="text-xs text-gray-600 mb-2">
-                С учётом роста сложности {difficultyGrowth}% + рост BTC 10-15% в год
-              </div>
-              <div className="text-xs bg-blue-50 p-2 rounded">
-                ⏱️ Срок жизни оборудования: 3 года
-              </div>
-              <div className="mt-2 text-sm">
-                Текущий ROI: <span className={`font-bold ${(currentAnnualRevenue / tokenPrice * 100) >= 33 ? 'text-green-600' : 'text-red-600'}`}>
-                  {(currentAnnualRevenue / tokenPrice * 100).toFixed(1)}%
-                </span>
-              </div>
-            </div>
+          {(() => {
+            // Предварительные расчёты для отображения
+            const currentAnnualRevenue = (miningRevenuePerTH - clientCostPerKwh) * 365
+            const eeMargin = ((clientCostEE - companyCostEE) / companyCostEE * 100)
+            
+            return (
+              <>
+                {/* Блок целевых требований */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  <div className="bg-white p-4 rounded-xl border-2 border-blue-400 shadow-lg">
+                    <div className="text-sm text-blue-600 font-semibold mb-2">🎯 ТРЕБОВАНИЕ 1 (критично):</div>
+                    <div className="text-xl font-bold text-blue-900 mb-1">ROI клиента ≥33%</div>
+                    <div className="text-xs text-gray-600 mb-2">
+                      С учётом роста сложности {difficultyGrowth}% + рост BTC 10-15% в год
+                    </div>
+                    <div className="text-xs bg-blue-50 p-2 rounded">
+                      ⏱️ Срок жизни оборудования: 3 года
+                    </div>
+                    <div className="mt-2 text-sm">
+                      Текущий ROI: <span className={`font-bold ${(currentAnnualRevenue / tokenPrice * 100) >= 33 ? 'text-green-600' : 'text-red-600'}`}>
+                        {(currentAnnualRevenue / tokenPrice * 100).toFixed(1)}%
+                      </span>
+                    </div>
+                  </div>
 
-            <div className="bg-white p-4 rounded-xl border-2 border-green-400 shadow-lg">
-              <div className="text-sm text-green-600 font-semibold mb-2">🎯 ТРЕБОВАНИЕ 2 (критично):</div>
-              <div className="text-xl font-bold text-green-900 mb-1">Наша наценка 30-40%</div>
-              <div className="text-xs text-gray-600 mb-2">
-                От продажи токенов (монет)
-              </div>
-              <div className="text-xs bg-green-50 p-2 rounded">
-                💰 Основной источник дохода компании
-              </div>
-              <div className="mt-2 text-sm">
-                Текущая наценка: <span className={`font-bold ${calculatedMargin >= 30 && calculatedMargin <= 40 ? 'text-green-600' : 'text-red-600'}`}>
-                  {calculatedMargin.toFixed(1)}%
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Дополнительная информация о марже ЭЭ */}
-          <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-300">
-            <div className="flex items-start gap-3">
-              <div className="text-2xl">ℹ️</div>
-              <div>
-                <div className="font-bold text-gray-800 mb-1">О марже ЭЭ:</div>
-                <div className="text-sm text-gray-700">
-                  Текущая маржа {eeMargin.toFixed(1)}% ({companyCostEE}₽ → {clientCostEE}₽) вполне достаточна. 
-                  <strong> Основной доход компании идёт от продажи токенов, а не от перепродажи электроэнергии.</strong>
-                  {' '}Повышение тарифа ЭЭ снизит привлекательность для клиентов.
+                  <div className="bg-white p-4 rounded-xl border-2 border-green-400 shadow-lg">
+                    <div className="text-sm text-green-600 font-semibold mb-2">🎯 ТРЕБОВАНИЕ 2 (критично):</div>
+                    <div className="text-xl font-bold text-green-900 mb-1">Наша наценка 30-40%</div>
+                    <div className="text-xs text-gray-600 mb-2">
+                      От продажи токенов (монет)
+                    </div>
+                    <div className="text-xs bg-green-50 p-2 rounded">
+                      💰 Основной источник дохода компании
+                    </div>
+                    <div className="mt-2 text-sm">
+                      Текущая наценка: <span className={`font-bold ${calculatedMargin >= 30 && calculatedMargin <= 40 ? 'text-green-600' : 'text-red-600'}`}>
+                        {calculatedMargin.toFixed(1)}%
+                      </span>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-          </div>
+
+                {/* Дополнительная информация о марже ЭЭ */}
+                <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-300">
+                  <div className="flex items-start gap-3">
+                    <div className="text-2xl">ℹ️</div>
+                    <div>
+                      <div className="font-bold text-gray-800 mb-1">О марже ЭЭ:</div>
+                      <div className="text-sm text-gray-700">
+                        Текущая маржа {eeMargin.toFixed(1)}% ({companyCostEE}₽ → {clientCostEE}₽) вполне достаточна. 
+                        <strong> Основной доход компании идёт от продажи токенов, а не от перепродажи электроэнергии.</strong>
+                        {' '}Повышение тарифа ЭЭ снизит привлекательность для клиентов.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )
+          })()}
 
           {/* Симулятор оптимальной цены */}
           <div className="bg-white p-6 rounded-xl border-2 border-purple-300 mb-6">
