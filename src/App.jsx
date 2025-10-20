@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
+import * as XLSX from 'xlsx'
 import './App.css'
 
 function App() {
@@ -290,6 +291,176 @@ function App() {
     URL.revokeObjectURL(url)
   }
 
+  // Функция экспорта в Excel с формулами
+  const exportToExcel = () => {
+    const wb = XLSX.utils.book_new()
+    
+    // === ЛИСТ 1: ВВОДНЫЕ ДАННЫЕ ===
+    const inputData = [
+      ['КАЛЬКУЛЯТОР ROI МАЙНИНГА'],
+      [`Дата создания: ${new Date().toLocaleString('ru-RU')}`],
+      [],
+      ['ВВОДНЫЕ ПАРАМЕТРЫ'],
+      [],
+      ['Параметр', 'Значение', 'Единица измерения'],
+      ['Курс USDT', usdtRate, '₽'],
+      ['Рост сложности сети', difficultyGrowth, '% в год'],
+      ['Сложность сети', networkDifficulty, 'Триллионов'],
+      ['Доход майнинга', btcPerTHPerDay, 'BTC/TH/день'],
+      [],
+      ['ЭЛЕКТРОЭНЕРГИЯ'],
+      ['Себестоимость ЭЭ', companyCostEE, '₽/кВт⋅ч'],
+      ['Продажа ЭЭ клиенту', clientCostEE, '₽/кВт⋅ч'],
+      [],
+      ['ТОКЕНЫ'],
+      ['Продажа 1 TH', tokenPrice, '$'],
+      [],
+      ['BITCOIN'],
+      ['Курс BTC сейчас', btcPriceNow, '$'],
+      ['Курс BTC через 1 год', btcPriceYear1, '$'],
+      ['Курс BTC через 2 года', btcPriceYear2, '$'],
+    ]
+    
+    const ws1 = XLSX.utils.aoa_to_sheet(inputData)
+    ws1['!cols'] = [{ width: 30 }, { width: 15 }, { width: 20 }]
+    XLSX.utils.book_append_sheet(wb, ws1, 'Вводные данные')
+    
+    // === ЛИСТ 2: СРАВНЕНИЕ T21 vs S21 Pro ===
+    const equipmentData = [
+      ['СРАВНЕНИЕ ОБОРУДОВАНИЯ'],
+      [],
+      ['Параметр', 'T21', 'S21 Pro', 'Разница'],
+      ['Модель', miners.T21.name, miners.S21Pro.name, ''],
+      ['Хешрейт (TH)', miners.T21.hashrate, miners.S21Pro.hashrate, { f: '=C5-B5' }],
+      ['Потребление (Вт)', miners.T21.power, miners.S21Pro.power, { f: '=C6-B6' }],
+      ['Цена ($)', miners.T21.price, miners.S21Pro.price, { f: '=C7-B7' }],
+      ['Эффективность (Вт/TH)', miners.T21.efficiency, miners.S21Pro.efficiency, { f: '=C8-B8' }],
+      [],
+      ['РАСЧЁТНЫЕ ПОКАЗАТЕЛИ'],
+      ['Себестоимость 1 TH ($)', { f: '=B7/B5' }, { f: '=C7/C5' }, { f: '=C11-B11' }],
+      ['Энергопотребление 1 TH (кВт/день)', { f: '=(B6*1.1/B5)*24/1000' }, { f: '=(C6*1.1/C5)*24/1000' }, { f: '=C12-B12' }],
+      [],
+      ['ДОХОДНОСТЬ (при текущих условиях)'],
+      ['Наценка при цене $' + tokenPrice, { f: `=((${tokenPrice}/B11)-1)*100` }, { f: `=((${tokenPrice}/C11)-1)*100` }, { f: '=C15-B15' }],
+      ['Доход майнинга ($/день)', { f: `=${btcPerTHPerDay}*${btcPriceNow}` }, { f: `=${btcPerTHPerDay}*${btcPriceNow}` }, '='],
+      ['Затраты на ЭЭ ($/день)', { f: `=(${clientCostEE}/${usdtRate})*B12` }, { f: `=(${clientCostEE}/${usdtRate})*C12` }, { f: '=C17-B17' }],
+      ['Чистый доход ($/день)', { f: '=B16-B17' }, { f: '=C16-C17' }, { f: '=C18-B18' }],
+      ['Годовой доход ($/год)', { f: '=B18*365' }, { f: '=C18*365' }, { f: '=C19-B19' }],
+      ['ROI инвестора (%)', { f: `=(B19/${tokenPrice})*100` }, { f: `=(C19/${tokenPrice})*100` }, { f: '=C20-B20' }],
+      ['Окупаемость (лет)', { f: `=${tokenPrice}/B19` }, { f: `=${tokenPrice}/C19` }, { f: '=C21-B21' }],
+      [],
+      ['ДОХОДНОСТЬ КОМПАНИИ'],
+      ['Прибыль от продажи 1 TH ($)', { f: `=${tokenPrice}-B11` }, { f: `=${tokenPrice}-C11` }, { f: '=C24-B24' }],
+      ['Прибыль от ЭЭ в год ($/TH)', { f: `=((${clientCostEE}-${companyCostEE})/${usdtRate})*B12*365` }, { f: `=((${clientCostEE}-${companyCostEE})/${usdtRate})*C12*365` }, { f: '=C25-B25' }],
+      ['Общая прибыль за год 1 ($/TH)', { f: '=B24+B25' }, { f: '=C24+C25' }, { f: '=C26-B26' }],
+    ]
+    
+    const ws2 = XLSX.utils.aoa_to_sheet(equipmentData)
+    ws2['!cols'] = [{ width: 35 }, { width: 20 }, { width: 20 }, { width: 20 }]
+    XLSX.utils.book_append_sheet(wb, ws2, 'T21 vs S21 Pro')
+    
+    // === ЛИСТ 3: ПРОГНОЗ НА 3 ГОДА (T21) ===
+    const forecast21Data = [
+      ['ПРОГНОЗ НА 3 ГОДА - T21'],
+      [`Цена токена: $${tokenPrice}`],
+      [`Рост сложности: ${difficultyGrowth}% в год`],
+      ['Рост BTC: 12.5% в год'],
+      [],
+      ['Год', 'Курс BTC ($)', 'Коэффициент сложности', 'Доход майнинга ($/день)', 'Затраты ЭЭ ($/день)', 'Чистый доход ($/день)', 'Годовой доход ($)', 'ROI (%)', 'Статус'],
+    ]
+    
+    for (let year = 1; year <= 3; year++) {
+      const row = year + 6
+      forecast21Data.push([
+        year,
+        { f: `=B2*POWER(1.125,${year})` }, // Курс BTC
+        { f: `=POWER(1-C2/100,${year})` }, // Коэффициент сложности
+        { f: `=(C${row}*B${row})*${btcPerTHPerDay}` }, // Доход майнинга
+        { f: `=(${clientCostEE}/${usdtRate})*(${miners.T21.power}*1.1/${miners.T21.hashrate})*24/1000` }, // Затраты ЭЭ
+        { f: `=D${row}-E${row}` }, // Чистый доход
+        { f: `=F${row}*365` }, // Годовой доход
+        { f: `=(G${row}/${tokenPrice})*100` }, // ROI
+        { f: `=IF(H${row}>=33,"✅ Цель выполнена","⚠️ Ниже цели")` }
+      ])
+    }
+    
+    forecast21Data.push([])
+    forecast21Data.push(['ИТОГО ЗА 3 ГОДА', '', '', '', '', '', { f: '=SUM(G7:G9)' }, { f: '=AVERAGE(H7:H9)' }, ''])
+    forecast21Data.push(['Средний ROI', '', '', '', '', '', '', { f: '=I11' }, ''])
+    
+    const ws3 = XLSX.utils.aoa_to_sheet(forecast21Data)
+    ws3['!cols'] = [{ width: 8 }, { width: 15 }, { width: 22 }, { width: 22 }, { width: 22 }, { width: 22 }, { width: 18 }, { width: 12 }, { width: 20 }]
+    XLSX.utils.book_append_sheet(wb, ws3, 'Прогноз T21')
+    
+    // === ЛИСТ 4: ПРОГНОЗ НА 3 ГОДА (S21 Pro) ===
+    const forecastS21Data = [
+      ['ПРОГНОЗ НА 3 ГОДА - S21 Pro'],
+      [`Цена токена: $${tokenPrice}`],
+      [`Рост сложности: ${difficultyGrowth}% в год`],
+      ['Рост BTC: 12.5% в год'],
+      [],
+      ['Год', 'Курс BTC ($)', 'Коэффициент сложности', 'Доход майнинга ($/день)', 'Затраты ЭЭ ($/день)', 'Чистый доход ($/день)', 'Годовой доход ($)', 'ROI (%)', 'Статус'],
+    ]
+    
+    for (let year = 1; year <= 3; year++) {
+      const row = year + 6
+      forecastS21Data.push([
+        year,
+        { f: `=B2*POWER(1.125,${year})` },
+        { f: `=POWER(1-C2/100,${year})` },
+        { f: `=(C${row}*B${row})*${btcPerTHPerDay}` },
+        { f: `=(${clientCostEE}/${usdtRate})*(${miners.S21Pro.power}*1.1/${miners.S21Pro.hashrate})*24/1000` },
+        { f: `=D${row}-E${row}` },
+        { f: `=F${row}*365` },
+        { f: `=(G${row}/${tokenPrice})*100` },
+        { f: `=IF(H${row}>=33,"✅ Цель выполнена","⚠️ Ниже цели")` }
+      ])
+    }
+    
+    forecastS21Data.push([])
+    forecastS21Data.push(['ИТОГО ЗА 3 ГОДА', '', '', '', '', '', { f: '=SUM(G7:G9)' }, { f: '=AVERAGE(H7:H9)' }, ''])
+    forecastS21Data.push(['Средний ROI', '', '', '', '', '', '', { f: '=I11' }, ''])
+    
+    const ws4 = XLSX.utils.aoa_to_sheet(forecastS21Data)
+    ws4['!cols'] = [{ width: 8 }, { width: 15 }, { width: 22 }, { width: 22 }, { width: 22 }, { width: 22 }, { width: 18 }, { width: 12 }, { width: 20 }]
+    XLSX.utils.book_append_sheet(wb, ws4, 'Прогноз S21 Pro')
+    
+    // === ЛИСТ 5: ОПТИМАЛЬНЫЕ ЦЕНЫ ===
+    const optimalData = [
+      ['ПОДБОР ОПТИМАЛЬНЫХ ЦЕН'],
+      [],
+      ['ТРЕБОВАНИЯ'],
+      ['ROI клиента', '≥33%'],
+      ['Наценка компании', '30-40%'],
+      [],
+      ['', 'T21', 'S21 Pro'],
+      ['Себестоимость 1 TH', { f: `=${miners.T21.price}/${miners.T21.hashrate}` }, { f: `=${miners.S21Pro.price}/${miners.S21Pro.hashrate}` }],
+      ['Годовой доход при BTC $' + btcPriceNow, { f: `=((${btcPerTHPerDay}*${btcPriceNow})-(${clientCostEE}/${usdtRate})*(${miners.T21.power}*1.1/${miners.T21.hashrate})*24/1000)*365` }, { f: `=((${btcPerTHPerDay}*${btcPriceNow})-(${clientCostEE}/${usdtRate})*(${miners.S21Pro.power}*1.1/${miners.S21Pro.hashrate})*24/1000)*365` }],
+      [],
+      ['ДЛЯ НАЦЕНКИ 30-40%'],
+      ['Мин. цена (30%)', { f: '=B8*1.3' }, { f: '=C8*1.3' }],
+      ['Макс. цена (40%)', { f: '=B8*1.4' }, { f: '=C8*1.4' }],
+      ['ROI при мин. цене', { f: '=(B9/B12)*100' }, { f: '=(C9/C12)*100' }],
+      ['ROI при макс. цене', { f: '=(B9/B13)*100' }, { f: '=(C9/C13)*100' }],
+      [],
+      ['ДЛЯ ROI 33%'],
+      ['Оптимальная цена токена', { f: '=B9/0.33' }, { f: '=C9/0.33' }],
+      ['Наценка при этой цене', { f: '=((B18/B8)-1)*100' }, { f: '=((C18/C8)-1)*100' }],
+      [],
+      ['КОМПРОМИССНЫЙ ВАРИАНТ'],
+      ['Рекомендуемая цена', { f: '=AVERAGE(B12,B18)' }, { f: '=AVERAGE(C12,C18)' }],
+      ['ROI при этой цене', { f: '=(B9/B22)*100' }, { f: '=(C9/C22)*100' }],
+      ['Наценка при этой цене', { f: '=((B22/B8)-1)*100' }, { f: '=((C22/C8)-1)*100' }],
+    ]
+    
+    const ws5 = XLSX.utils.aoa_to_sheet(optimalData)
+    ws5['!cols'] = [{ width: 30 }, { width: 20 }, { width: 20 }]
+    XLSX.utils.book_append_sheet(wb, ws5, 'Оптимальные цены')
+    
+    // Сохранение файла
+    XLSX.writeFile(wb, `mining_roi_calculator_${Date.now()}.xlsx`)
+  }
+
   return (
     <div className="min-h-screen py-8 px-4">
       <div className="max-w-7xl mx-auto">
@@ -547,12 +718,20 @@ function App() {
               {' | '}
               <strong>ROI инвестора:</strong> ~{calculatedScenarios[0]?.investorROI.toFixed(1)}% годовых
       </div>
-            <button
-              onClick={exportToText}
-              className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-green-600 hover:to-emerald-700 transition-all shadow-lg whitespace-nowrap"
-            >
-              📥 Экспортировать отчёт (TXT)
-        </button>
+            <div className="flex gap-3 flex-wrap justify-center">
+              <button
+                onClick={exportToText}
+                className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-green-600 hover:to-emerald-700 transition-all shadow-lg whitespace-nowrap"
+              >
+                📄 Экспорт TXT
+              </button>
+              <button
+                onClick={exportToExcel}
+                className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-blue-600 hover:to-indigo-700 transition-all shadow-lg whitespace-nowrap"
+              >
+                📊 Экспорт Excel (с формулами)
+              </button>
+            </div>
           </div>
         </div>
 
@@ -848,180 +1027,166 @@ function App() {
 
           {/* Симулятор оптимальной цены */}
           <div className="bg-white p-6 rounded-xl border-2 border-purple-300 mb-6">
-            <h3 className="text-xl font-bold text-purple-900 mb-4">🔧 Подбор оптимальной цены</h3>
+            <h3 className="text-xl font-bold text-purple-900 mb-4">🔧 Подбор оптимальной цены (сравнение T21 vs S21 Pro)</h3>
             
             {(() => {
-              // Рассчитываем оптимальную цену для выполнения всех требований
-              
-              // 1. Для наценки 30-40%
-              const minPriceForMargin = costPerTH * 1.30  // 30% наценка
-              const maxPriceForMargin = costPerTH * 1.40  // 40% наценка
-              
-              // 2. Для ROI клиента 33% с учётом роста сложности за 3 года
-              // Нужно учесть падение доходности из-за роста сложности
-              // За 3 года доходность упадёт: год1: 100%, год2: 52.72%, год3: 27.79%
-              // Средняя доходность за 3 года: (100 + 52.72 + 27.79) / 3 = 60.17%
-              // Плюс рост BTC 10-15% компенсирует часть падения
-              
-              // Упрощённо: для 33% ROI нужно, чтобы годовой доход был 33% от цены токена
-              const targetAnnualRevenue = tokenPrice * 0.33
-              const currentAnnualRevenue = (miningRevenuePerTH - clientCostPerKwh) * 365
-              
-              // Рассчитываем необходимую цену BTC для 33% ROI при текущей цене токена
-              const neededBtcPriceForTarget = (targetAnnualRevenue / 365 + clientCostPerKwh) / btcPerTHPerDay
-              
-              // Или наоборот - при текущей цене BTC какая должна быть цена токена для 33% ROI
-              const optimalTokenPriceForRoi = currentAnnualRevenue / 0.33
-              
-              // 3. Для маржи ЭЭ 30%
-              const neededClientEE = companyCostEE * 1.30  // Нужно 30% маржи
-              
-              // Итоговые рекомендации
-              const recommendations = {
-                tokenPrice: {
-                  forMargin: { min: minPriceForMargin, max: maxPriceForMargin },
-                  forRoi: optimalTokenPriceForRoi,
-                  optimal: Math.max(minPriceForMargin, Math.min(maxPriceForMargin, optimalTokenPriceForRoi))
-                },
-                btcPrice: neededBtcPriceForTarget,
-                eeClient: neededClientEE
+              // Функция расчёта для конкретного оборудования
+              const calculateForMiner = (miner, minerName) => {
+                const costPerTH_m = miner.price / miner.hashrate
+                const energyPerTH_m = (miner.power * 1.1 / miner.hashrate) * 24 / 1000
+                const clientCostPerKwh_m = (clientCostEE / usdtRate) * energyPerTH_m
+                const currentAnnualRevenue_m = (miningRevenuePerTH - clientCostPerKwh_m) * 365
+                const calculatedMargin_m = ((tokenPrice / costPerTH_m - 1) * 100)
+                
+                return {
+                  name: minerName,
+                  costPerTH: costPerTH_m,
+                  energyPerTH: energyPerTH_m,
+                  currentAnnualRevenue: currentAnnualRevenue_m,
+                  calculatedMargin: calculatedMargin_m,
+                  minPriceForMargin: costPerTH_m * 1.30,
+                  maxPriceForMargin: costPerTH_m * 1.40,
+                  optimalTokenPriceForRoi: currentAnnualRevenue_m / 0.33,
+                  neededBtcPriceForTarget: ((tokenPrice * 0.33) / 365 + clientCostPerKwh_m) / btcPerTHPerDay,
+                  checkMargin: calculatedMargin_m >= 30 && calculatedMargin_m <= 40,
+                  checkRoi: (currentAnnualRevenue_m / tokenPrice * 100) >= 33
+                }
               }
               
-              const checkMargin = calculatedMargin >= 30 && calculatedMargin <= 40
-              const checkRoi = (currentAnnualRevenue / tokenPrice * 100) >= 33
+              const t21Data = calculateForMiner(miners.T21, 'T21')
+              const s21Data = calculateForMiner(miners.S21Pro, 'S21 Pro')
               const eeMargin = ((clientCostEE - companyCostEE) / companyCostEE * 100)
               
               return (
                 <>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                    {/* Текущие показатели */}
-                    <div className="space-y-3">
-                      <h4 className="font-bold text-gray-800 mb-3">📊 Текущие показатели:</h4>
-                      
-                      <div className={`p-3 rounded-lg ${checkMargin ? 'bg-green-100 border-2 border-green-400' : 'bg-red-100 border-2 border-red-400'}`}>
-                        <div className="flex justify-between items-center">
-                          <span className="font-semibold">Наценка на токены:</span>
-                          <span className="font-bold text-lg">{calculatedMargin.toFixed(1)}% {checkMargin ? '✅' : '❌'}</span>
-                        </div>
-                        <div className="text-xs text-gray-600 mt-1">
-                          Цель: 30-40% (обязательно)
-                        </div>
-                      </div>
-
-                      <div className={`p-3 rounded-lg ${checkRoi ? 'bg-green-100 border-2 border-green-400' : 'bg-red-100 border-2 border-red-400'}`}>
-                        <div className="flex justify-between items-center">
-                          <span className="font-semibold">ROI клиента (год 1):</span>
-                          <span className="font-bold text-lg">{(currentAnnualRevenue / tokenPrice * 100).toFixed(1)}% {checkRoi ? '✅' : '❌'}</span>
-                        </div>
-                        <div className="text-xs text-gray-600 mt-1">
-                          Цель: ≥33% (обязательно)
-                        </div>
-                      </div>
-
-                      <div className="p-3 rounded-lg bg-gray-50 border-2 border-gray-300">
-                        <div className="flex justify-between items-center">
-                          <span className="font-semibold">Маржа ЭЭ:</span>
-                          <span className="font-bold text-lg">{eeMargin.toFixed(1)}%</span>
-                        </div>
-                        <div className="text-xs text-gray-600 mt-1">
-                          Текущая: {companyCostEE}₽ → {clientCostEE}₽ (разница: {(clientCostEE - companyCostEE).toFixed(1)}₽)
-                        </div>
-                        <div className="text-xs text-blue-600 mt-1">
-                          ℹ️ Маржа ЭЭ - не критична, основной доход от токенов
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Рекомендации */}
-                    <div className="space-y-3">
-                      <h4 className="font-bold text-gray-800 mb-3">💡 Рекомендации:</h4>
-                      
-                      <div className="p-4 bg-gradient-to-r from-purple-100 to-pink-100 rounded-lg border-2 border-purple-300">
-                        <div className="font-bold text-purple-900 mb-2">Оптимальная цена токена:</div>
-                        <div className="text-3xl font-bold text-purple-700 mb-2">
-                          ${recommendations.tokenPrice.optimal.toFixed(2)}
-                        </div>
-                        <div className="text-xs text-gray-700 space-y-1">
-                          <div>• Для наценки 30-40%: ${minPriceForMargin.toFixed(2)} - ${maxPriceForMargin.toFixed(2)}</div>
-                          <div>• Для ROI 33%: ${optimalTokenPriceForRoi.toFixed(2)}</div>
-                          <div>• Текущая цена: ${tokenPrice} {tokenPrice >= minPriceForMargin && tokenPrice <= maxPriceForMargin ? '✅' : '⚠️'}</div>
-                        </div>
-                      </div>
-
-                      <div className="p-4 bg-blue-100 rounded-lg border-2 border-blue-300">
-                        <div className="font-bold text-blue-900 mb-2">Альтернатива: дождаться роста BTC</div>
-                        <div className="text-2xl font-bold text-blue-700 mb-1">
-                          ${Math.round(neededBtcPriceForTarget).toLocaleString()}
-                        </div>
-                        <div className="text-xs text-gray-700">
-                          Текущая: ${btcPriceNow.toLocaleString()} (нужен рост на {((neededBtcPriceForTarget / btcPriceNow - 1) * 100).toFixed(0)}%)
-                        </div>
-                        <div className="text-xs text-gray-500 mt-2">
-                          При такой цене BTC можно оставить текущую цену токена $25
-                        </div>
-                      </div>
-
-                      <div className="p-4 bg-gray-100 rounded-lg border-2 border-gray-300">
-                        <div className="font-bold text-gray-900 mb-2">Прибыль от ЭЭ:</div>
-                        <div className="text-2xl font-bold text-gray-700 mb-1">
-                          {((clientCostEE - companyCostEE) / companyCostEE * 100).toFixed(1)}%
-                        </div>
-                        <div className="text-xs text-gray-700">
-                          ${((clientCostPerKwh - companyCostPerKwh) * 365).toFixed(2)}/год на 1 TH
-                        </div>
-                        <div className="text-xs text-blue-600 mt-2">
-                          ✓ Маржа ЭЭ не критична - основной доход от токенов
-                        </div>
-                      </div>
-                    </div>
+                  {/* Сравнительная таблица T21 vs S21 Pro */}
+                  <div className="overflow-x-auto mb-6">
+                    <table className="w-full border-collapse bg-white rounded-lg overflow-hidden">
+                      <thead className="bg-gradient-to-r from-purple-600 to-pink-600 text-white">
+                        <tr>
+                          <th className="p-3 text-left">Параметр</th>
+                          <th className="p-3 text-center bg-blue-600">{t21Data.name}</th>
+                          <th className="p-3 text-center bg-green-600">{s21Data.name}</th>
+                          <th className="p-3 text-center">Разница</th>
+                        </tr>
+                      </thead>
+                      <tbody className="text-sm">
+                        <tr className="border-b hover:bg-gray-50">
+                          <td className="p-3 font-semibold">Себестоимость 1 TH</td>
+                          <td className="p-3 text-center">${t21Data.costPerTH.toFixed(2)}</td>
+                          <td className="p-3 text-center">${s21Data.costPerTH.toFixed(2)}</td>
+                          <td className="p-3 text-center font-bold text-green-600">${(t21Data.costPerTH - s21Data.costPerTH).toFixed(2)}</td>
+                        </tr>
+                        <tr className="border-b hover:bg-gray-50">
+                          <td className="p-3 font-semibold">Годовой доход ($/TH)</td>
+                          <td className="p-3 text-center">${t21Data.currentAnnualRevenue.toFixed(2)}</td>
+                          <td className="p-3 text-center">${s21Data.currentAnnualRevenue.toFixed(2)}</td>
+                          <td className="p-3 text-center font-bold text-green-600">${(s21Data.currentAnnualRevenue - t21Data.currentAnnualRevenue).toFixed(2)}</td>
+                        </tr>
+                        <tr className="border-b bg-purple-50">
+                          <td className="p-3 font-semibold">Наценка при $${tokenPrice}</td>
+                          <td className={`p-3 text-center font-bold ${t21Data.checkMargin ? 'text-green-600' : 'text-red-600'}`}>
+                            {t21Data.calculatedMargin.toFixed(1)}% {t21Data.checkMargin ? '✅' : '❌'}
+                          </td>
+                          <td className={`p-3 text-center font-bold ${s21Data.checkMargin ? 'text-green-600' : 'text-red-600'}`}>
+                            {s21Data.calculatedMargin.toFixed(1)}% {s21Data.checkMargin ? '✅' : '❌'}
+                          </td>
+                          <td className="p-3 text-center text-gray-500">Цель: 30-40%</td>
+                        </tr>
+                        <tr className="border-b bg-blue-50">
+                          <td className="p-3 font-semibold">ROI клиента при $${tokenPrice}</td>
+                          <td className={`p-3 text-center font-bold ${t21Data.checkRoi ? 'text-green-600' : 'text-red-600'}`}>
+                            {(t21Data.currentAnnualRevenue / tokenPrice * 100).toFixed(1)}% {t21Data.checkRoi ? '✅' : '❌'}
+                          </td>
+                          <td className={`p-3 text-center font-bold ${s21Data.checkRoi ? 'text-green-600' : 'text-red-600'}`}>
+                            {(s21Data.currentAnnualRevenue / tokenPrice * 100).toFixed(1)}% {s21Data.checkRoi ? '✅' : '❌'}
+                          </td>
+                          <td className="p-3 text-center text-gray-500">Цель: ≥33%</td>
+                        </tr>
+                        <tr className="border-b bg-green-50">
+                          <td className="p-3 font-semibold">💰 Для наценки 30%</td>
+                          <td className="p-3 text-center font-bold text-purple-700">${t21Data.minPriceForMargin.toFixed(2)}</td>
+                          <td className="p-3 text-center font-bold text-purple-700">${s21Data.minPriceForMargin.toFixed(2)}</td>
+                          <td className="p-3 text-center text-gray-500">Min цена</td>
+                        </tr>
+                        <tr className="border-b bg-green-50">
+                          <td className="p-3 font-semibold">💰 Для наценки 40%</td>
+                          <td className="p-3 text-center font-bold text-purple-700">${t21Data.maxPriceForMargin.toFixed(2)}</td>
+                          <td className="p-3 text-center font-bold text-purple-700">${s21Data.maxPriceForMargin.toFixed(2)}</td>
+                          <td className="p-3 text-center text-gray-500">Max цена</td>
+                        </tr>
+                        <tr className="border-b bg-yellow-50">
+                          <td className="p-3 font-semibold">🎯 Для ROI 33%</td>
+                          <td className="p-3 text-center font-bold text-blue-700">${t21Data.optimalTokenPriceForRoi.toFixed(2)}</td>
+                          <td className="p-3 text-center font-bold text-blue-700">${s21Data.optimalTokenPriceForRoi.toFixed(2)}</td>
+                          <td className="p-3 text-center text-gray-500">Опт. цена</td>
+                        </tr>
+                        <tr className="bg-orange-50">
+                          <td className="p-3 font-semibold">🚀 Или BTC до:</td>
+                          <td className="p-3 text-center font-bold text-orange-700">${Math.round(t21Data.neededBtcPriceForTarget).toLocaleString()}</td>
+                          <td className="p-3 text-center font-bold text-orange-700">${Math.round(s21Data.neededBtcPriceForTarget).toLocaleString()}</td>
+                          <td className="p-3 text-center text-gray-500">Рост на {((t21Data.neededBtcPriceForTarget / btcPriceNow - 1) * 100).toFixed(0)}%</td>
+                        </tr>
+                      </tbody>
+                    </table>
                   </div>
 
-                  {/* Итоговое резюме */}
-                  <div className="bg-gradient-to-r from-yellow-50 to-orange-50 p-4 rounded-xl border-2 border-yellow-400">
-                    <h4 className="font-bold text-yellow-900 mb-3">📝 Итоговое резюме:</h4>
-                    <div className="space-y-2 text-sm text-gray-800">
-                      {checkMargin && checkRoi ? (
-                        <div className="bg-green-200 p-3 rounded-lg border-2 border-green-500">
-                          <div className="font-bold text-green-900 text-lg mb-2">✅ Основные требования выполнены!</div>
-                          <div>Наценка и ROI клиента соответствуют целям</div>
-                          <div className="text-xs text-gray-600 mt-2">
-                            Маржа ЭЭ: {eeMargin.toFixed(1)}% (не критично, основной доход от продажи токенов)
-                          </div>
+                  {/* Итоговые рекомендации */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* T21 */}
+                    <div className={`p-4 rounded-xl border-2 ${t21Data.checkMargin && t21Data.checkRoi ? 'bg-green-50 border-green-500' : 'bg-red-50 border-red-500'}`}>
+                      <h4 className="font-bold text-lg mb-2 flex items-center gap-2">
+                        {t21Data.checkMargin && t21Data.checkRoi ? '✅' : '⚠️'} {t21Data.name}
+                      </h4>
+                      {t21Data.checkMargin && t21Data.checkRoi ? (
+                        <div className="text-green-800">
+                          <div className="font-semibold">Все требования выполнены!</div>
+                          <div className="text-sm mt-1">Цена токена ${tokenPrice} оптимальна</div>
                         </div>
                       ) : (
-                        <div className="space-y-2">
-                          <div className="font-bold text-orange-900 mb-2">⚠️ Для выполнения основных требований:</div>
-                          {!checkMargin && (
-                            <div className="bg-white p-3 rounded border-l-4 border-red-500">
-                              <div className="font-semibold text-red-800 mb-1">❌ Наценка слишком высокая ({calculatedMargin.toFixed(1)}%)</div>
-                              <div className="text-gray-700">
-                                → Снизьте цену токена до <strong>${minPriceForMargin.toFixed(2)}-${maxPriceForMargin.toFixed(2)}</strong>
-                              </div>
-                              <div className="text-xs text-gray-500 mt-1">
-                                Это даст наценку 30-40% при себестоимости ${costPerTH.toFixed(2)}
-                              </div>
-                            </div>
+                        <div className="text-gray-800 space-y-2 text-sm">
+                          {!t21Data.checkMargin && (
+                            <div>❌ Наценка {t21Data.calculatedMargin.toFixed(1)}% (нужно 30-40%)</div>
                           )}
-                          {!checkRoi && (
-                            <div className="bg-white p-3 rounded border-l-4 border-orange-500">
-                              <div className="font-semibold text-orange-800 mb-1">❌ ROI клиента низкий ({(currentAnnualRevenue / tokenPrice * 100).toFixed(1)}%)</div>
-                              <div className="text-gray-700">
-                                <strong>Вариант 1:</strong> Снизьте цену токена до <strong>${optimalTokenPriceForRoi.toFixed(2)}</strong>
-                              </div>
-                              <div className="text-gray-700">
-                                <strong>Вариант 2:</strong> Дождитесь роста BTC до <strong>${Math.round(neededBtcPriceForTarget).toLocaleString()}</strong> (рост на {((neededBtcPriceForTarget / btcPriceNow - 1) * 100).toFixed(0)}%)
-                              </div>
-                            </div>
+                          {!t21Data.checkRoi && (
+                            <div>❌ ROI {(t21Data.currentAnnualRevenue / tokenPrice * 100).toFixed(1)}% (нужно ≥33%)</div>
                           )}
-                          
-                          {checkMargin && checkRoi && (
-                            <div className="bg-green-100 p-3 rounded border-l-4 border-green-500">
-                              <div className="font-semibold text-green-800">✅ Отлично! Оба основных требования выполнены</div>
-                            </div>
-                          )}
+                          <div className="font-semibold text-purple-700 mt-2">
+                            💡 Рекомендуемая цена: ${Math.max(t21Data.minPriceForMargin, Math.min(t21Data.maxPriceForMargin, t21Data.optimalTokenPriceForRoi)).toFixed(2)}
+                          </div>
                         </div>
                       )}
                     </div>
+
+                    {/* S21 Pro */}
+                    <div className={`p-4 rounded-xl border-2 ${s21Data.checkMargin && s21Data.checkRoi ? 'bg-green-50 border-green-500' : 'bg-red-50 border-red-500'}`}>
+                      <h4 className="font-bold text-lg mb-2 flex items-center gap-2">
+                        {s21Data.checkMargin && s21Data.checkRoi ? '✅' : '⚠️'} {s21Data.name}
+                      </h4>
+                      {s21Data.checkMargin && s21Data.checkRoi ? (
+                        <div className="text-green-800">
+                          <div className="font-semibold">Все требования выполнены!</div>
+                          <div className="text-sm mt-1">Цена токена ${tokenPrice} оптимальна</div>
+                        </div>
+                      ) : (
+                        <div className="text-gray-800 space-y-2 text-sm">
+                          {!s21Data.checkMargin && (
+                            <div>❌ Наценка {s21Data.calculatedMargin.toFixed(1)}% (нужно 30-40%)</div>
+                          )}
+                          {!s21Data.checkRoi && (
+                            <div>❌ ROI {(s21Data.currentAnnualRevenue / tokenPrice * 100).toFixed(1)}% (нужно ≥33%)</div>
+                          )}
+                          <div className="font-semibold text-purple-700 mt-2">
+                            💡 Рекомендуемая цена: ${Math.max(s21Data.minPriceForMargin, Math.min(s21Data.maxPriceForMargin, s21Data.optimalTokenPriceForRoi)).toFixed(2)}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Справка о марже ЭЭ */}
+                  <div className="mt-4 p-3 bg-gray-50 rounded-lg border border-gray-300 text-sm text-gray-700">
+                    <strong>ℹ️ Маржа ЭЭ:</strong> {eeMargin.toFixed(1)}% ({companyCostEE}₽ → {clientCostEE}₽) - не критична, основной доход от продажи токенов.
                   </div>
                 </>
               )
