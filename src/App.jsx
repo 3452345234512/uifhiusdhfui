@@ -266,8 +266,9 @@ function App() {
     text += '• Срок жизни оборудования: 3 года\n\n'
     
     text += '💡 ТЕКУЩИЕ ПОКАЗАТЕЛИ:\n'
-    text += `• Наценка на токены: ${calculatedMargin.toFixed(1)}% ${calculatedMargin >= 30 && calculatedMargin <= 40 ? '✅' : '⚠️'}\n`
-    text += `• Маржа ЭЭ: ${((clientCostEE - companyCostEE) / companyCostEE * 100).toFixed(1)}% ${((clientCostEE - companyCostEE) / companyCostEE * 100) >= 30 ? '✅' : '⚠️'}\n\n`
+    text += `• Наценка на токены: ${marginPercent}% ${marginPercent >= 30 && marginPercent <= 40 ? '✅' : '⚠️'}\n`
+    text += `• ROI инвестора: ${avgROI.toFixed(1)}%\n`
+    text += `• Маржа ЭЭ: ${((clientCostEE - companyCostEE) / companyCostEE * 100).toFixed(1)}% (не критично)\n\n`
     
     calculatedScenarios.forEach((s, idx) => {
       text += `\n${'═'.repeat(43)}\n`
@@ -1082,8 +1083,8 @@ function App() {
                       💰 Основной источник дохода компании
                     </div>
                     <div className="mt-2 text-sm">
-                      Текущая наценка: <span className={`font-bold ${calculatedMargin >= 30 && calculatedMargin <= 40 ? 'text-green-600' : 'text-red-600'}`}>
-                        {calculatedMargin.toFixed(1)}%
+                      Текущая наценка: <span className={`font-bold ${marginPercent >= 30 && marginPercent <= 40 ? 'text-green-600' : 'text-red-600'}`}>
+                        {marginPercent}%
                       </span>
                     </div>
                   </div>
@@ -1422,8 +1423,8 @@ function App() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
               <div>
                 <span className="text-gray-600">Наценка на токены:</span>
-                <span className={`ml-2 font-bold ${calculatedMargin >= 30 && calculatedMargin <= 40 ? 'text-green-600' : 'text-orange-600'}`}>
-                  {calculatedMargin.toFixed(1)}% {calculatedMargin >= 30 && calculatedMargin <= 40 ? '✅' : '⚠️'}
+                <span className={`ml-2 font-bold ${marginPercent >= 30 && marginPercent <= 40 ? 'text-green-600' : 'text-orange-600'}`}>
+                  {marginPercent}% {marginPercent >= 30 && marginPercent <= 40 ? '✅' : '⚠️'}
                 </span>
               </div>
               <div>
