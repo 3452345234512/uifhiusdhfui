@@ -1199,10 +1199,11 @@ function App() {
                 <thead>
                   <tr className="bg-gradient-to-r from-purple-600 to-pink-600 text-white">
                     <th className="px-4 py-3 text-left rounded-tl-lg">Год</th>
-                    <th className="px-4 py-3 text-center">Цена BTC</th>
+                    <th className="px-4 py-3 text-center">Цена BTC (прогноз +12.5%/год)</th>
                     <th className="px-4 py-3 text-center">Доходность майнинга</th>
                     <th className="px-4 py-3 text-center">Чистый доход</th>
-                    <th className="px-4 py-3 text-center rounded-tr-lg">ROI клиента</th>
+                    <th className="px-4 py-3 text-center">ROI клиента</th>
+                    <th className="px-4 py-3 text-center rounded-tr-lg bg-green-600">🎯 BTC для ROI 33%</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
@@ -1220,6 +1221,13 @@ function App() {
                     const annualRevenue = netRevenue * 365
                     const roi = (annualRevenue / tokenPrice) * 100
                     
+                    // Рассчитываем необходимую цену BTC для ROI 33%
+                    const targetAnnualRevenue = tokenPrice * 0.33 // Нужный годовой доход
+                    const targetDailyRevenue = targetAnnualRevenue / 365
+                    const targetMiningRevenue = targetDailyRevenue + clientCostPerKwh
+                    const neededBtcPrice = targetMiningRevenue / (btcPerTHPerDay * difficultyFactor)
+                    const growthNeeded = ((neededBtcPrice / btcPriceNow - 1) * 100)
+                    
                     const rowColor = roi >= 33 ? 'bg-green-50' : roi >= 20 ? 'bg-yellow-50' : 'bg-red-50'
                     
                     return (
@@ -1227,7 +1235,7 @@ function App() {
                         <td className="px-4 py-3 font-bold">Год {year}</td>
                         <td className="px-4 py-3 text-center font-semibold">
                           ${Math.round(btcPriceYear).toLocaleString()}
-                          <div className="text-xs text-gray-500">+{((btcGrowth - 1) * 100).toFixed(1)}%/год</div>
+                          <div className="text-xs text-gray-500">+{((btcPriceYear / btcPriceNow - 1) * 100).toFixed(0)}% от сейчас</div>
                         </td>
                         <td className="px-4 py-3 text-center">
                           {(difficultyFactor * 100).toFixed(1)}% от начальной
@@ -1244,6 +1252,14 @@ function App() {
                             {roi.toFixed(1)}% {roi >= 33 ? '✅' : roi >= 20 ? '⚠️' : '❌'}
                           </span>
                         </td>
+                        <td className="px-4 py-3 text-center bg-green-50">
+                          <div className="font-bold text-green-700 text-lg">
+                            ${Math.round(neededBtcPrice).toLocaleString()}
+                          </div>
+                          <div className="text-xs text-gray-600">
+                            {growthNeeded > 0 ? `↗️ +${growthNeeded.toFixed(0)}%` : `↘️ ${growthNeeded.toFixed(0)}%`} от сейчас
+                          </div>
+                        </td>
                       </tr>
                     )
                   })}
@@ -1251,11 +1267,53 @@ function App() {
               </table>
             </div>
             
-            <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-              <p className="text-sm text-gray-700">
-                💡 <strong>Важно:</strong> Даже с ростом BTC на 12.5% в год, доходность снижается из-за роста сложности. 
-                К 3-му году ROI падает ниже целевых 33%. Рекомендуется учитывать это при ценообразовании.
-              </p>
+            <div className="mt-4 space-y-3">
+              <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border-2 border-green-400">
+                <p className="font-bold text-green-900 mb-2">🎯 Реалистичные ожидания для целевого ROI 33%:</p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+                  <div className="bg-white p-3 rounded">
+                    <div className="font-semibold text-gray-700">Год 1:</div>
+                    <div className="text-lg font-bold text-green-700">
+                      ${Math.round((tokenPrice * 0.33 / 365 + clientCostPerKwh) / (btcPerTHPerDay * Math.pow(1 - difficultyGrowth / 100, 1))).toLocaleString()}
+                    </div>
+                    <div className="text-xs text-gray-600">
+                      +{(((tokenPrice * 0.33 / 365 + clientCostPerKwh) / (btcPerTHPerDay * Math.pow(1 - difficultyGrowth / 100, 1)) / btcPriceNow - 1) * 100).toFixed(0)}% роста
+                    </div>
+                  </div>
+                  <div className="bg-white p-3 rounded">
+                    <div className="font-semibold text-gray-700">Год 2:</div>
+                    <div className="text-lg font-bold text-orange-700">
+                      ${Math.round((tokenPrice * 0.33 / 365 + clientCostPerKwh) / (btcPerTHPerDay * Math.pow(1 - difficultyGrowth / 100, 2))).toLocaleString()}
+                    </div>
+                    <div className="text-xs text-gray-600">
+                      +{(((tokenPrice * 0.33 / 365 + clientCostPerKwh) / (btcPerTHPerDay * Math.pow(1 - difficultyGrowth / 100, 2)) / btcPriceNow - 1) * 100).toFixed(0)}% роста
+                    </div>
+                  </div>
+                  <div className="bg-white p-3 rounded">
+                    <div className="font-semibold text-gray-700">Год 3:</div>
+                    <div className="text-lg font-bold text-red-700">
+                      ${Math.round((tokenPrice * 0.33 / 365 + clientCostPerKwh) / (btcPerTHPerDay * Math.pow(1 - difficultyGrowth / 100, 3))).toLocaleString()}
+                    </div>
+                    <div className="text-xs text-gray-600">
+                      +{(((tokenPrice * 0.33 / 365 + clientCostPerKwh) / (btcPerTHPerDay * Math.pow(1 - difficultyGrowth / 100, 3)) / btcPriceNow - 1) * 100).toFixed(0)}% роста
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="p-3 bg-blue-50 rounded-lg">
+                <p className="text-sm text-gray-700">
+                  💡 <strong>Важно:</strong> Даже с ростом BTC на 12.5% в год, доходность снижается из-за роста сложности {difficultyGrowth}% в год. 
+                  Для поддержания ROI 33% на протяжении 3 лет, курс BTC должен расти значительно быстрее - на {(((tokenPrice * 0.33 / 365 + clientCostPerKwh) / (btcPerTHPerDay * Math.pow(1 - difficultyGrowth / 100, 3)) / btcPriceNow - 1) * 100 / 3).toFixed(0)}% в год.
+                </p>
+              </div>
+              
+              <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-300">
+                <p className="text-sm text-gray-700">
+                  ⚠️ <strong>Вывод:</strong> При текущей цене токена $25 и сложности сети, для достижения целевого ROI 33% нужен экстремальный рост BTC. 
+                  Рекомендуется снизить цену токена до $12-14 для более реалистичных ожиданий от рынка.
+                </p>
+              </div>
             </div>
           </div>
         </div>
