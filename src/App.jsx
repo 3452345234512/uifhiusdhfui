@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react'
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, ComposedChart } from 'recharts'
 import * as XLSX from 'xlsx'
+import historicalData from './difficulty.json'
 import './App.css'
 
 function App() {
@@ -467,32 +468,60 @@ function App() {
 
   return (
     <div className="min-h-screen py-8 px-4">
-      <div className="max-w-7xl mx-auto">
-        {/* Информационные карточки */}
-        <div className="mb-8">
-          <div className="flex flex-col md:flex-row gap-3 justify-center">
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl px-6 py-3">
-              <p className="text-white font-semibold">
-                🖥️ {currentMiner.name} ({currentMiner.hashrate} TH, {currentMiner.power} Вт)
-              </p>
+      {/* Закрепленная панель выбора асика */}
+      <div className="sticky top-0 z-50 bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 shadow-2xl mb-8">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            {/* Выбор майнера */}
+            <div className="flex items-center gap-4">
+              <span className="text-white font-bold text-lg">🖥️ Майнер:</span>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setSelectedMiner('T21')}
+                  className={`px-6 py-2 rounded-lg font-semibold transition-all ${
+                    selectedMiner === 'T21'
+                      ? 'bg-white text-purple-700 shadow-lg scale-105'
+                      : 'bg-white/20 text-white hover:bg-white/30'
+                  }`}
+                >
+                  T21 (190 TH)
+                </button>
+                <button
+                  onClick={() => setSelectedMiner('S21Pro')}
+                  className={`px-6 py-2 rounded-lg font-semibold transition-all ${
+                    selectedMiner === 'S21Pro'
+                      ? 'bg-white text-purple-700 shadow-lg scale-105'
+                      : 'bg-white/20 text-white hover:bg-white/30'
+                  }`}
+                >
+                  S21 Pro (245 TH)
+                </button>
+              </div>
             </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl px-6 py-3">
-              <p className="text-white font-semibold">
-                📊 Сложность: {networkDifficulty}T | Рост: ~{difficultyGrowth}% в год
-              </p>
-            </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl px-6 py-3">
-              <p className="text-white font-semibold">
-                ₿ BTC: ${btcPriceNow.toLocaleString()} | {btcPerTHPerDay.toFixed(8)} BTC/TH/день
-              </p>
-            </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl px-6 py-3">
-              <p className="text-white text-sm">
-                📡 <a href="https://www.viabtc.com/res/tools/calculator?coin=BTC" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-200">ViaBTC API</a>
-              </p>
+            
+            {/* Информация */}
+            <div className="flex flex-wrap gap-3 text-sm">
+              <div className="bg-white/10 backdrop-blur-sm rounded-lg px-4 py-2">
+                <span className="text-white font-semibold">
+                  ₿ ${btcPriceNow.toLocaleString()}
+                </span>
+              </div>
+              <div className="bg-white/10 backdrop-blur-sm rounded-lg px-4 py-2">
+                <span className="text-white font-semibold">
+                  📊 Сложность: {networkDifficulty}T
+                </span>
+              </div>
+              <div className="bg-white/10 backdrop-blur-sm rounded-lg px-4 py-2">
+                <span className="text-white font-semibold">
+                  💱 USDT: {usdtRate}₽
+                </span>
+              </div>
             </div>
           </div>
         </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto">
 
         {/* Панель настроек */}
         <div className="bg-white rounded-2xl shadow-2xl p-6 mb-8">
@@ -1633,6 +1662,115 @@ function App() {
               />
             </AreaChart>
           </ResponsiveContainer>
+        </div>
+
+        {/* Исторические графики сложности и BTC */}
+        <div className="bg-white rounded-2xl shadow-2xl p-6 mb-8">
+          <h2 className="text-2xl font-bold mb-6 text-gray-800">📊 Историческая динамика сложности сети и курса Bitcoin</h2>
+          
+          {(() => {
+            // Подготовка данных из historical data (берем последние 365 дней)
+            const now = Date.now()
+            const yearAgo = now - 365 * 24 * 60 * 60 * 1000
+            
+            const difficultyPoints = historicalData.values
+              .filter(p => p.x >= yearAgo)
+              .map(p => ({
+                date: new Date(p.x).toLocaleDateString('ru-RU', { month: 'short', day: 'numeric' }),
+                timestamp: p.x,
+                difficulty: (p.y / 1e12).toFixed(2), // в триллионах
+              }))
+            
+            const pricePoints = historicalData.prices
+              .filter(p => p.x >= yearAgo)
+              .map(p => ({
+                date: new Date(p.x).toLocaleDateString('ru-RU', { month: 'short', day: 'numeric' }),
+                timestamp: p.x,
+                price: p.y
+              }))
+            
+            // Объединяем данные по timestamp
+            const combinedData = difficultyPoints.map((d, idx) => {
+              const pricePoint = pricePoints.find(p => Math.abs(p.timestamp - d.timestamp) < 24 * 60 * 60 * 1000)
+              return {
+                date: d.date,
+                difficulty: parseFloat(d.difficulty),
+                price: pricePoint ? pricePoint.price : null
+              }
+            }).filter((_, idx) => idx % 3 === 0) // Каждый 3-й для оптимизации
+            
+            return (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* График сложности */}
+                <div>
+                  <h3 className="font-bold text-gray-700 mb-3">📊 Сложность сети (последний год)</h3>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <LineChart data={combinedData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis 
+                        dataKey="date" 
+                        tick={{ fontSize: 10 }}
+                        interval="preserveStartEnd"
+                      />
+                      <YAxis 
+                        label={{ value: 'Триллионы', angle: -90, position: 'insideLeft', style: { fontSize: 12 } }}
+                        tick={{ fontSize: 10 }}
+                      />
+                      <Tooltip 
+                        formatter={(value) => `${value} T`}
+                        contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.95)', borderRadius: '8px', fontSize: '12px' }}
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="difficulty" 
+                        stroke="#8b5cf6" 
+                        strokeWidth={2}
+                        dot={false}
+                        name="Сложность"
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                  <p className="text-xs text-gray-600 mt-2 text-center">
+                    Текущая сложность: {networkDifficulty}T | Рост: {difficultyGrowth}% в год
+                  </p>
+                </div>
+
+                {/* График Bitcoin */}
+                <div>
+                  <h3 className="font-bold text-gray-700 mb-3">₿ Курс Bitcoin (последний год)</h3>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <LineChart data={combinedData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis 
+                        dataKey="date" 
+                        tick={{ fontSize: 10 }}
+                        interval="preserveStartEnd"
+                      />
+                      <YAxis 
+                        label={{ value: 'USD', angle: -90, position: 'insideLeft', style: { fontSize: 12 } }}
+                        tick={{ fontSize: 10 }}
+                      />
+                      <Tooltip 
+                        formatter={(value) => value ? `$${value.toLocaleString()}` : 'N/A'}
+                        contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.95)', borderRadius: '8px', fontSize: '12px' }}
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="price" 
+                        stroke="#f59e0b" 
+                        strokeWidth={2}
+                        dot={false}
+                        name="BTC USD"
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                  <p className="text-xs text-gray-600 mt-2 text-center">
+                    Текущий курс: ${btcPriceNow.toLocaleString()} | Прогноз год: ${btcPriceYear1.toLocaleString()}
+                  </p>
+                </div>
+              </div>
+            )
+          })()}
         </div>
 
         {/* Карточки с ключевыми метриками */}
