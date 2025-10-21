@@ -487,22 +487,37 @@ function App() {
             <div className="bg-white/10 backdrop-blur-sm rounded-lg px-3 py-2">
               <div className="text-white/70 text-xs font-semibold">Мощность пула</div>
               <div className="text-white font-bold text-lg">{totalPoolTH.toLocaleString()} TH</div>
+              <div className="text-white/60 text-xs mt-1">
+                = {t21TH.toFixed(0)} TH (T21) + {s21TH.toFixed(0)} TH (S21 Pro)
+              </div>
             </div>
             <div className="bg-white/10 backdrop-blur-sm rounded-lg px-3 py-2">
               <div className="text-white/70 text-xs font-semibold">Потребление</div>
               <div className="text-white font-bold text-lg">{totalPowerMW.toFixed(1)} МВт</div>
+              <div className="text-white/60 text-xs mt-1">
+                = ({t21Count} × {miners.T21_190.power}W + {s21Count} × {miners.S21Pro.power}W) × 1.1 ÷ 1,000,000
+              </div>
             </div>
             <div className="bg-white/10 backdrop-blur-sm rounded-lg px-3 py-2">
               <div className="text-white/70 text-xs font-semibold">Эффективность</div>
               <div className="text-white font-bold text-lg">{avgEfficiency.toFixed(1)} Вт/TH</div>
+              <div className="text-white/60 text-xs mt-1">
+                = ({miners.T21_190.efficiency} × {fleetT21Percent}% + {miners.S21Pro.efficiency} × {fleetS21Percent}%) ÷ 100
+              </div>
             </div>
             <div className="bg-white/10 backdrop-blur-sm rounded-lg px-3 py-2">
               <div className="text-white/70 text-xs font-semibold">₿ Bitcoin</div>
               <div className="text-white font-bold text-lg">${(btcPriceNow/1000).toFixed(0)}k</div>
+              <div className="text-white/60 text-xs mt-1">
+                = ${btcPriceNow.toLocaleString()} (из ViaBTC API)
+              </div>
             </div>
             <div className="bg-white/10 backdrop-blur-sm rounded-lg px-3 py-2">
               <div className="text-white/70 text-xs font-semibold">H2C Цена</div>
               <div className="text-white font-bold text-lg">${tokenPrice.toFixed(2)}</div>
+              <div className="text-white/60 text-xs mt-1">
+                = ${avgCostPerTH.toFixed(2)} × (1 + {marginPercent}%)
+              </div>
             </div>
           </div>
           
@@ -655,6 +670,9 @@ function App() {
                 <div className="text-xs text-gray-500 mt-1">
                   Взвешенная по составу парка
                 </div>
+                <div className="text-xs text-gray-500 mt-1">
+                  = (${t21CostPerTH.toFixed(2)} × {fleetT21Percent}% + ${s21CostPerTH.toFixed(2)} × {fleetS21Percent}%) ÷ 100
+                </div>
               </div>
               <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-lg border-2 border-purple-300">
                 <label className="block text-sm font-semibold text-purple-700 mb-2">
@@ -665,6 +683,9 @@ function App() {
                 </div>
                 <div className="text-xs text-gray-600 mt-1">
                   1 H2C = 1 TH в пуле
+                </div>
+                <div className="text-xs text-gray-500 mt-1">
+                  = ${avgCostPerTH.toFixed(2)} × (1 + {marginPercent}%)
                 </div>
               </div>
               <div className="bg-green-50 p-4 rounded-lg border-2 border-green-300">
@@ -677,6 +698,9 @@ function App() {
                 <div className="text-xs text-gray-600 mt-1">
                   Прибыль: ${(tokenPrice - avgCostPerTH).toFixed(2)}/TH
                 </div>
+                <div className="text-xs text-gray-500 mt-1">
+                  = (${tokenPrice.toFixed(2)} - ${avgCostPerTH.toFixed(2)}) ÷ ${avgCostPerTH.toFixed(2)} × 100%
+                </div>
               </div>
               <div className="bg-blue-50 p-4 rounded-lg border-2 border-blue-300">
                 <label className="block text-sm font-semibold text-blue-700 mb-2">
@@ -687,6 +711,9 @@ function App() {
                 </div>
                 <div className="text-xs text-gray-600 mt-1">
                   ${avgAnnualRevenue.toFixed(2)}/год на 1 H2C
+                </div>
+                <div className="text-xs text-gray-500 mt-1">
+                  = (${avgAnnualRevenue.toFixed(2)} ÷ ${tokenPrice.toFixed(2)}) × 100%
                 </div>
               </div>
             </div>
@@ -794,20 +821,6 @@ function App() {
               {' | '}
               <strong>ROI инвестора:</strong> ~{avgROI.toFixed(1)}% годовых
       </div>
-            <div className="flex gap-3 flex-wrap justify-center">
-              <button
-                onClick={exportToText}
-                className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-green-600 hover:to-emerald-700 transition-all shadow-lg whitespace-nowrap"
-              >
-                📄 Экспорт TXT
-        </button>
-              <button
-                onClick={exportToExcel}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-blue-600 hover:to-indigo-700 transition-all shadow-lg whitespace-nowrap"
-              >
-                📊 Экспорт Excel (с формулами)
-        </button>
-            </div>
           </div>
         </div>
 
@@ -1552,11 +1565,34 @@ function App() {
                   <span className="text-gray-600">Доход (год):</span>
                   <span className="font-bold">${poolCalculation.investorAnnualRevenue.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between bg-purple-50 p-2 rounded">
-                  <span className="text-purple-700 font-semibold">ROI инвестора:</span>
-                  <span className="font-bold text-purple-700 text-xl">
-                    {poolCalculation.investorROI.toFixed(2)}%
-                  </span>
+                <div className="bg-purple-50 p-3 rounded">
+                  <div className="text-purple-700 font-semibold mb-2">ROI инвестора: {poolCalculation.investorROI.toFixed(2)}%</div>
+                  
+                  {/* Ползунок с долями */}
+                  <div className="relative">
+                    <div className="h-6 bg-gray-200 rounded-lg overflow-hidden">
+                      <div 
+                        className="h-full bg-gradient-to-r from-red-500 to-red-600 flex items-center justify-center text-white text-xs font-semibold"
+                        style={{width: `${(clientCostPerKwh * 365 / poolCalculation.investorAnnualRevenue) * 100}%`}}
+                      >
+                        ЭЭ: {((clientCostPerKwh * 365 / poolCalculation.investorAnnualRevenue) * 100).toFixed(1)}%
+                      </div>
+                      <div 
+                        className="h-full bg-gradient-to-r from-green-500 to-green-600 flex items-center justify-center text-white text-xs font-semibold absolute top-0"
+                        style={{
+                          left: `${(clientCostPerKwh * 365 / poolCalculation.investorAnnualRevenue) * 100}%`,
+                          width: `${100 - (clientCostPerKwh * 365 / poolCalculation.investorAnnualRevenue) * 100}%`
+                        }}
+                      >
+                        Чистый: {(100 - (clientCostPerKwh * 365 / poolCalculation.investorAnnualRevenue) * 100).toFixed(1)}%
+                      </div>
+                    </div>
+                    <div className="text-xs text-gray-600 mt-1">
+                      Грязный доход: ${(poolCalculation.investorAnnualRevenue + clientCostPerKwh * 365).toFixed(2)} | 
+                      ЭЭ: ${(clientCostPerKwh * 365).toFixed(2)} | 
+                      Чистый: ${poolCalculation.investorAnnualRevenue.toFixed(2)}
+                    </div>
+                  </div>
                 </div>
                 <div className="flex justify-between bg-orange-50 p-2 rounded">
                   <span className="text-orange-700 font-semibold">Окупаемость:</span>
