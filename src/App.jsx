@@ -70,8 +70,12 @@ function App() {
     // Средневзвешенная энергоэффективность (Вт/TH)
     const avgEfficiency = (miners.T21_190.efficiency * fleetT21Percent + miners.S21Pro.efficiency * fleetS21Percent) / 100
     
-    // Общее потребление пула (МВт)
-    const totalPowerMW = ((t21Count * miners.T21_190.power) + (s21Count * miners.S21Pro.power)) * 1.1 / 1000000
+    // Общее потребление пула
+    const t21PowerWatts = t21Count * miners.T21_190.power
+    const s21PowerWatts = s21Count * miners.S21Pro.power
+    const totalPowerWatts = t21PowerWatts + s21PowerWatts
+    const totalPowerWithInfrastructure = totalPowerWatts * 1.1 // +10% на инфраструктуру
+    const totalPowerMW = totalPowerWithInfrastructure / 1000000
     
     return {
       t21TH,
@@ -82,12 +86,16 @@ function App() {
       s21CostPerTH,
       avgCostPerTH,
       avgEfficiency,
-      totalPowerMW
+      totalPowerMW,
+      t21PowerWatts,
+      s21PowerWatts,
+      totalPowerWatts,
+      totalPowerWithInfrastructure
     }
   }, [totalPoolTH, fleetT21Percent, fleetS21Percent])
 
   // Извлекаем значения из useMemo
-  const { t21TH, s21TH, t21Count, s21Count, t21CostPerTH, s21CostPerTH, avgCostPerTH, avgEfficiency, totalPowerMW } = poolCalculations
+  const { t21TH, s21TH, t21Count, s21Count, t21CostPerTH, s21CostPerTH, avgCostPerTH, avgEfficiency, totalPowerMW, t21PowerWatts, s21PowerWatts, totalPowerWatts, totalPowerWithInfrastructure } = poolCalculations
   
   // Средневзвешенное энергопотребление 1 TH за 24 часа (кВт/день)
   const avgEnergyPerTH = (avgEfficiency * 1.1 * 24) / 1000
@@ -518,7 +526,10 @@ function App() {
               <div className="text-white/70 text-xs font-semibold">Потребление</div>
               <div className="text-white font-bold text-lg">{totalPowerMW.toFixed(1)} МВт</div>
               <div className="text-white/60 text-xs mt-1">
-                = ({t21Count} × {miners.T21_190.power}W + {s21Count} × {miners.S21Pro.power}W) × 1.1 ÷ 1,000,000
+                = {totalPowerWatts.toLocaleString()}W + 10% инфраструктура
+              </div>
+              <div className="text-white/50 text-xs mt-1">
+                T21: {t21PowerWatts.toLocaleString()}W | S21: {s21PowerWatts.toLocaleString()}W
               </div>
             </div>
             <div className="bg-white/10 backdrop-blur-sm rounded-lg px-3 py-2">
@@ -985,6 +996,42 @@ function App() {
             </div>
           </div>
 
+          {/* Детальный расчет потребления */}
+          <div className="mt-6 p-4 bg-blue-50 rounded-lg border-2 border-blue-300">
+            <h4 className="font-bold text-blue-900 mb-3">⚡ Детальный расчет потребления пула:</h4>
+            <div className="text-sm text-gray-700 space-y-2">
+              <div className="bg-white p-3 rounded border">
+                <div className="font-semibold text-gray-800 mb-2">1️⃣ Потребление асиков:</div>
+                <div className="ml-4 space-y-1">
+                  <div>• T21 190TH: {t21Count} шт × {miners.T21_190.power}W = <strong>{t21PowerWatts.toLocaleString()}W</strong></div>
+                  <div>• S21 Pro: {s21Count} шт × {miners.S21Pro.power}W = <strong>{s21PowerWatts.toLocaleString()}W</strong></div>
+                  <div className="border-t pt-1 font-semibold">Итого асиков: <strong>{totalPowerWatts.toLocaleString()}W</strong></div>
+                </div>
+              </div>
+              
+              <div className="bg-white p-3 rounded border">
+                <div className="font-semibold text-gray-800 mb-2">2️⃣ Инфраструктура (+10%):</div>
+                <div className="ml-4 space-y-1">
+                  <div>• Охлаждение и вентиляция</div>
+                  <div>• Сетевое оборудование (коммутаторы, роутеры)</div>
+                  <div>• ИБП и стабилизаторы</div>
+                  <div>• Потери в кабелях и соединениях</div>
+                  <div>• Освещение и мониторинг</div>
+                  <div className="border-t pt-1 font-semibold">Дополнительно: <strong>{(totalPowerWatts * 0.1).toLocaleString()}W</strong></div>
+                </div>
+              </div>
+              
+              <div className="bg-white p-3 rounded border">
+                <div className="font-semibold text-gray-800 mb-2">3️⃣ Общее потребление:</div>
+                <div className="ml-4 space-y-1">
+                  <div>• Асики: {totalPowerWatts.toLocaleString()}W</div>
+                  <div>• Инфраструктура: {(totalPowerWatts * 0.1).toLocaleString()}W</div>
+                  <div className="border-t pt-1 font-semibold text-lg">ИТОГО: <strong>{totalPowerWithInfrastructure.toLocaleString()}W</strong> = <strong>{totalPowerMW.toFixed(1)} МВт</strong></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Важные замечания */}
           <div className="mt-6 p-4 bg-yellow-50 rounded-lg border-2 border-yellow-300">
             <h4 className="font-bold text-yellow-900 mb-2">⚠️ Важные факторы:</h4>
@@ -992,7 +1039,7 @@ function App() {
               <li>• <strong>Рост сложности сети:</strong> {difficultyGrowth}% в год снижает доходность майнинга на тот же процент</li>
               <li>• <strong>Изменение цены BTC:</strong> напрямую влияет на валовый доход инвестора</li>
               <li>• <strong>Срок жизни оборудования:</strong> ~3 года, после чего эффективность падает</li>
-              <li>• <strong>Инфраструктура:</strong> +10% к энергопотреблению (сеть, охлаждение, контейнер)</li>
+              <li>• <strong>Инфраструктура:</strong> +10% к энергопотреблению (сеть, охлаждение, контейнер, вентиляция, ИБП, потери в кабелях)</li>
               <li>• <strong>Для компании:</strong> доход от токенов - единовременный, от ЭЭ - ежегодный</li>
               <li>• <strong>Для инвестора:</strong> чистый доход = майнинг минус оплата ЭЭ</li>
             </ul>
