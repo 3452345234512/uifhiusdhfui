@@ -12,11 +12,12 @@ function App() {
   const [clientCostEE, setClientCostEE] = useState(6.2) // Продажа ЭЭ клиенту (₽/кВт⋅ч)
   
   // 2. Состав парка оборудования (портфель компании)
-  const [fleetT21Percent, setFleetT21Percent] = useState(52) // % T21 в парке
+  const [fleetT21_190Percent, setFleetT21_190Percent] = useState(30) // % T21 190TH в парке
+  const [fleetT21_234Percent, setFleetT21_234Percent] = useState(22) // % T21 234TH в парке
   const [totalPoolTH, setTotalPoolTH] = useState(5430) // Общая мощность пула в TH
   
   // 3. Токены
-  const marginPercent = 30 // Фиксированная наценка 30%
+  const marginPercent = 20 // Фиксированная наценка 20%
   
   // 4. Курс Bitcoin (из ViaBTC API)
   const [btcPriceNow, setBtcPriceNow] = useState(106497) // Курс BTC сейчас ($)
@@ -33,12 +34,19 @@ function App() {
   
   // Параметры оборудования
   const miners = {
-    'T21': {
-      name: 'Antminer T21',
+    'T21_190': {
+      name: 'Antminer T21 (190TH)',
       hashrate: 190, // TH
       power: 3610, // Вт
       price: 2050, // USD
       efficiency: 19 // Вт/TH
+    },
+    'T21_234': {
+      name: 'Antminer T21 (234TH)',
+      hashrate: 234, // TH
+      power: 3510, // Вт
+      price: 2500, // USD (примерная цена)
+      efficiency: 15 // Вт/TH
     },
     'S21Pro': {
       name: 'Antminer S21 Pro',
@@ -50,26 +58,29 @@ function App() {
   }
   
   // РАСЧЁТ СРЕДНЕВЗВЕШЕННЫХ ПОКАЗАТЕЛЕЙ ПУЛА
-  const fleetS21Percent = 100 - fleetT21Percent
+  const fleetS21Percent = 100 - fleetT21_190Percent - fleetT21_234Percent
   
   // Количество TH каждой модели в пуле
-  const t21TH = (totalPoolTH * fleetT21Percent) / 100
+  const t21_190TH = (totalPoolTH * fleetT21_190Percent) / 100
+  const t21_234TH = (totalPoolTH * fleetT21_234Percent) / 100
   const s21TH = (totalPoolTH * fleetS21Percent) / 100
   
   // Количество асиков каждой модели
-  const t21Count = Math.ceil(t21TH / miners.T21.hashrate)
+  const t21_190Count = Math.ceil(t21_190TH / miners.T21_190.hashrate)
+  const t21_234Count = Math.ceil(t21_234TH / miners.T21_234.hashrate)
   const s21Count = Math.ceil(s21TH / miners.S21Pro.hashrate)
   
   // Средневзвешенная себестоимость 1 TH
-  const t21CostPerTH = miners.T21.price / miners.T21.hashrate
+  const t21_190CostPerTH = miners.T21_190.price / miners.T21_190.hashrate
+  const t21_234CostPerTH = miners.T21_234.price / miners.T21_234.hashrate
   const s21CostPerTH = miners.S21Pro.price / miners.S21Pro.hashrate
-  const avgCostPerTH = (t21CostPerTH * fleetT21Percent + s21CostPerTH * fleetS21Percent) / 100
+  const avgCostPerTH = (t21_190CostPerTH * fleetT21_190Percent + t21_234CostPerTH * fleetT21_234Percent + s21CostPerTH * fleetS21Percent) / 100
   
   // Средневзвешенная энергоэффективность (Вт/TH)
-  const avgEfficiency = (miners.T21.efficiency * fleetT21Percent + miners.S21Pro.efficiency * fleetS21Percent) / 100
+  const avgEfficiency = (miners.T21_190.efficiency * fleetT21_190Percent + miners.T21_234.efficiency * fleetT21_234Percent + miners.S21Pro.efficiency * fleetS21Percent) / 100
   
-  // Общее потребление пула (МВт)
-  const totalPowerMW = ((t21Count * miners.T21.power) + (s21Count * miners.S21Pro.power)) * 1.1 / 1000000
+  // Общее потребление пула (МВт) - правильный расчет
+  const totalPowerMW = ((t21_190Count * miners.T21_190.power) + (t21_234Count * miners.T21_234.power) + (s21Count * miners.S21Pro.power)) * 1.1 / 1000000
   
   // Средневзвешенное энергопотребление 1 TH за 24 часа (кВт/день)
   const avgEnergyPerTH = (avgEfficiency * 1.1 * 24) / 1000
@@ -79,7 +90,7 @@ function App() {
   
   // Затраты и доходы
   const companyCostPerKwh = (companyCostEE / usdtRate) * avgEnergyPerTH
-  const clientCostPerKwh = (clientCostEE / usdtRate) * avgEnergyPerTH
+  const clientCostPerKwh = (clientCostEE / usdtRate) * avgEnergyPerTH * 1.1 // +10% наценка на ЭЭ
   const miningRevenuePerTH = btcPerTHPerDay * btcPriceNow
   
   // Чистый доход клиента (средний по пулу)
@@ -97,12 +108,7 @@ function App() {
     { label: 'Бычий', price: 200000 },
   ]
   
-  // Сценарии продаж (на основе общего пула)
-  const scenarios = [
-    { name: 'Базовый', totalTH: 1000 },
-    { name: 'Средний', totalTH: 3000 },
-    { name: 'Премиум', totalTH: 10000 },
-  ]
+  // Удалены сценарии - работаем только с общим пулом
 
   // Функция расчёта для одного сценария
   const calculateScenario = (scenarioTH) => {
@@ -123,7 +129,8 @@ function App() {
     const totalRevenueYear1 = tokenSalesRevenue + energyProfitPerYear
     
     // 5. ROI для компании
-    const companyROI = ((totalRevenueYear1 - totalInvestment) / totalInvestment) * 100
+    // ROI = (Прибыль от продажи токенов + Прибыль от ЭЭ) / Инвестиции в оборудование
+    const companyROI = (totalRevenueYear1 / totalInvestment) * 100
     
     // 6. Доходность для инвестора
     const investorDailyRevenue = miningRevenuePerTH - clientCostPerDay
@@ -146,13 +153,10 @@ function App() {
     }
   }
 
-  // Расчёт всех сценариев
-  const calculatedScenarios = useMemo(() => {
-    return scenarios.map(s => ({
-      ...s,
-      ...calculateScenario(s.totalTH)
-    }))
-  }, [avgCostPerTH, tokenPrice, avgEnergyPerTH, companyCostPerKwh, clientCostPerKwh, miningRevenuePerTH])
+  // Расчёт для общего пула
+  const poolCalculation = useMemo(() => {
+    return calculateScenario(totalPoolTH)
+  }, [totalPoolTH, avgCostPerTH, tokenPrice, avgEnergyPerTH, companyCostPerKwh, clientCostPerKwh, miningRevenuePerTH])
 
   // Данные для графика (5 лет) с учётом роста сложности
   const chartData = useMemo(() => {
@@ -162,33 +166,36 @@ function App() {
     for (let year = 0; year <= years; year++) {
       const dataPoint = { year: `Год ${year}` }
       
-      calculatedScenarios.forEach((scenario, idx) => {
-        if (year === 0) {
-          dataPoint[`scenario${idx}`] = 0
+      if (year === 0) {
+        dataPoint.clientRevenue = 0
+        dataPoint.companyRevenue = 0
+        dataPoint.clientElectricityCost = 0
+      } else {
+        // Коэффициент снижения доходности из-за роста сложности
+        const miningRevenueFactor = Math.pow(1 - (difficultyGrowth / 100), year - 1)
+        
+        // Доход клиента от майнинга (с учётом падения доходности)
+        const adjustedMiningRevenue = poolCalculation.investorAnnualRevenue * miningRevenueFactor
+        dataPoint.clientRevenue = adjustedMiningRevenue
+        
+        // Расходы клиента на ЭЭ (постоянные)
+        dataPoint.clientElectricityCost = clientCostPerKwh * totalPoolTH * 365
+        
+        // Доход компании
+        if (year === 1) {
+          // Первый год: продажа токенов + ЭЭ
+          dataPoint.companyRevenue = poolCalculation.tokenSalesRevenue + poolCalculation.energyProfitPerYear
         } else {
-          // Коэффициент снижения доходности из-за роста сложности
-          // Доходность падает на difficultyGrowth% каждый год
-          const miningRevenueFactor = Math.pow(1 - (difficultyGrowth / 100), year - 1)
-          
-          // Доход от майнинга с учётом падения доходности (для инвесторов)
-          const adjustedMiningRevenue = scenario.investorAnnualRevenue * miningRevenueFactor
-          
-          // Общий доход компании
-          if (year === 1) {
-            // Первый год: продажа токенов + ЭЭ
-            dataPoint[`scenario${idx}`] = scenario.tokenSalesRevenue + scenario.energyProfitPerYear
-          } else {
-            // Последующие годы: только ЭЭ (доход от токенов был в первый год)
-            dataPoint[`scenario${idx}`] = scenario.tokenSalesRevenue + (scenario.energyProfitPerYear * year)
-          }
+          // Последующие годы: только ЭЭ
+          dataPoint.companyRevenue = poolCalculation.energyProfitPerYear
         }
-      })
+      }
       
       data.push(dataPoint)
     }
     
     return data
-  }, [calculatedScenarios, difficultyGrowth])
+  }, [poolCalculation, difficultyGrowth, clientCostPerKwh, totalPoolTH])
 
   // Функция экспорта в текст (упрощенный вариант вместо PDF)
   const exportToText = () => {
@@ -270,34 +277,32 @@ function App() {
     text += `• ROI инвестора: ${avgROI.toFixed(1)}%\n`
     text += `• Маржа ЭЭ: ${((clientCostEE - companyCostEE) / companyCostEE * 100).toFixed(1)}% (не критично)\n\n`
     
-    calculatedScenarios.forEach((s, idx) => {
-      text += `\n${'═'.repeat(43)}\n`
-      text += `📦 СЦЕНАРИЙ ${idx + 1}: ${s.name.toUpperCase()}\n`
-      text += `${'═'.repeat(43)}\n`
-      text += `• Токенов: ${s.tokens.toLocaleString()}\n`
-      text += `• Асиков: ${s.asics}\n`
-      text += `• Мощность: ${s.totalTH.toLocaleString()} TH\n`
-      text += `• Инвестиции: $${s.totalInvestment.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}\n\n`
-      text += `💰 ДОХОД КОМПАНИИ (год 1):\n`
-      text += `• От продажи токенов: $${s.tokenSalesRevenue.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}\n`
-      text += `• От электроэнергии: $${s.energyProfitPerYear.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}\n`
-      text += `• ИТОГО: $${s.totalRevenueYear1.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}\n`
-      text += `• ROI компании: ${s.companyROI.toFixed(1)}%\n\n`
-      text += `📈 ДОХОДНОСТЬ ИНВЕСТОРА (при текущей сложности):\n`
-      text += `• Чистый доход: $${s.investorDailyRevenue.toFixed(4)}/день\n`
-      text += `• Годовой доход: $${s.investorAnnualRevenue.toFixed(2)}\n`
-      text += `• ROI: ${s.investorROI.toFixed(2)}% годовых\n`
-      text += `• Окупаемость: ${s.paybackYears.toFixed(2)} лет\n\n`
-      
-      // Добавим прогноз с учётом роста сложности
-      text += `📉 ПРОГНОЗ С УЧЁТОМ РОСТА СЛОЖНОСТИ (${difficultyGrowth}%):\n`
-      for (let year = 1; year <= 3; year++) {
-        const factor = Math.pow(1 - (difficultyGrowth / 100), year - 1)
-        const adjustedRevenue = s.investorAnnualRevenue * factor
-        const adjustedROI = (adjustedRevenue / tokenPrice) * 100
-        text += `• Год ${year}: доход $${adjustedRevenue.toFixed(2)} (ROI ${adjustedROI.toFixed(2)}%)\n`
-      }
-    })
+    // Показатели пула
+    text += `\n${'═'.repeat(43)}\n`
+    text += `📦 МАЙНИНГ-ПУЛ HASH2CASH\n`
+    text += `${'═'.repeat(43)}\n`
+    text += `• Токенов: ${poolCalculation.tokens.toLocaleString()}\n`
+    text += `• Мощность: ${poolCalculation.totalTH.toLocaleString()} TH\n`
+    text += `• Инвестиции: $${poolCalculation.totalInvestment.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}\n\n`
+    text += `💰 ДОХОД КОМПАНИИ (год 1):\n`
+    text += `• От продажи токенов: $${poolCalculation.tokenSalesRevenue.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}\n`
+    text += `• От электроэнергии: $${poolCalculation.energyProfitPerYear.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}\n`
+    text += `• ИТОГО: $${poolCalculation.totalRevenueYear1.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}\n`
+    text += `• ROI компании: ${poolCalculation.companyROI.toFixed(1)}%\n\n`
+    text += `📈 ДОХОДНОСТЬ ИНВЕСТОРА (при текущей сложности):\n`
+    text += `• Чистый доход: $${poolCalculation.investorDailyRevenue.toFixed(4)}/день\n`
+    text += `• Годовой доход: $${poolCalculation.investorAnnualRevenue.toFixed(2)}\n`
+    text += `• ROI: ${poolCalculation.investorROI.toFixed(2)}% годовых\n`
+    text += `• Окупаемость: ${poolCalculation.paybackYears.toFixed(2)} лет\n\n`
+    
+    // Добавим прогноз с учётом роста сложности
+    text += `📉 ПРОГНОЗ С УЧЁТОМ РОСТА СЛОЖНОСТИ (${difficultyGrowth}%):\n`
+    for (let year = 1; year <= 3; year++) {
+      const factor = Math.pow(1 - (difficultyGrowth / 100), year - 1)
+      const adjustedRevenue = poolCalculation.investorAnnualRevenue * factor
+      const adjustedROI = (adjustedRevenue / tokenPrice) * 100
+      text += `• Год ${year}: доход $${adjustedRevenue.toFixed(2)} (ROI ${adjustedROI.toFixed(2)}%)\n`
+    }
     
     text += `\n${'═'.repeat(43)}\n`
     text += `Дата создания: ${new Date().toLocaleString('ru-RU')}\n`
@@ -512,25 +517,55 @@ function App() {
             </div>
           </div>
           
-          {/* Ползунок состава парка */}
+          {/* Ползунки состава парка */}
           <div className="bg-white/10 backdrop-blur-sm rounded-lg px-4 py-3">
-            <div className="flex items-center gap-4">
-              <span className="text-white font-semibold text-sm whitespace-nowrap">🖥️ Состав парка:</span>
-              <div className="flex-1">
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={fleetT21Percent}
-                  onChange={(e) => setFleetT21Percent(parseInt(e.target.value))}
-                  className="w-full h-2 rounded-lg appearance-none cursor-pointer"
-                  style={{
-                    background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${fleetT21Percent}%, #10b981 ${fleetT21Percent}%, #10b981 100%)`
-                  }}
-                />
-                <div className="flex justify-between text-xs text-white/90 mt-1">
-                  <span>{fleetT21Percent}% T21 ({(totalPoolTH * fleetT21Percent / 100).toFixed(0)} TH)</span>
-                  <span>{100 - fleetT21Percent}% S21 Pro ({(totalPoolTH * (100 - fleetT21Percent) / 100).toFixed(0)} TH)</span>
+            <div className="space-y-3">
+              <div className="flex items-center gap-4">
+                <span className="text-white font-semibold text-sm whitespace-nowrap">🖥️ T21 190TH:</span>
+                <div className="flex-1">
+                  <input
+                    type="range"
+                    min="0"
+                    max="50"
+                    value={fleetT21_190Percent}
+                    onChange={(e) => setFleetT21_190Percent(parseInt(e.target.value))}
+                    className="w-full h-2 rounded-lg appearance-none cursor-pointer"
+                    style={{
+                      background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${fleetT21_190Percent * 2}%, #e5e7eb ${fleetT21_190Percent * 2}%, #e5e7eb 100%)`
+                    }}
+                  />
+                  <div className="text-xs text-white/90 mt-1">
+                    {fleetT21_190Percent}% T21 190TH ({(totalPoolTH * fleetT21_190Percent / 100).toFixed(0)} TH)
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-4">
+                <span className="text-white font-semibold text-sm whitespace-nowrap">🖥️ T21 234TH:</span>
+                <div className="flex-1">
+                  <input
+                    type="range"
+                    min="0"
+                    max="50"
+                    value={fleetT21_234Percent}
+                    onChange={(e) => setFleetT21_234Percent(parseInt(e.target.value))}
+                    className="w-full h-2 rounded-lg appearance-none cursor-pointer"
+                    style={{
+                      background: `linear-gradient(to right, #10b981 0%, #10b981 ${fleetT21_234Percent * 2}%, #e5e7eb ${fleetT21_234Percent * 2}%, #e5e7eb 100%)`
+                    }}
+                  />
+                  <div className="text-xs text-white/90 mt-1">
+                    {fleetT21_234Percent}% T21 234TH ({(totalPoolTH * fleetT21_234Percent / 100).toFixed(0)} TH)
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-4">
+                <span className="text-white font-semibold text-sm whitespace-nowrap">🖥️ S21 Pro:</span>
+                <div className="flex-1">
+                  <div className="text-xs text-white/90 mt-1">
+                    {fleetS21Percent}% S21 Pro ({(totalPoolTH * fleetS21Percent / 100).toFixed(0)} TH)
+                  </div>
                 </div>
               </div>
             </div>
@@ -579,29 +614,40 @@ function App() {
               <div className="flex h-12 rounded-lg overflow-hidden shadow-lg">
                 <div 
                   className="bg-gradient-to-r from-blue-500 to-blue-600 flex flex-col items-center justify-center text-white font-semibold transition-all"
-                  style={{width: `${fleetT21Percent}%`}}
+                  style={{width: `${fleetT21_190Percent}%`}}
                 >
-                  {fleetT21Percent > 10 && (
+                  {fleetT21_190Percent > 5 && (
                     <>
-                      <div className="text-lg">T21</div>
-                      <div className="text-xs">{fleetT21Percent}% ({t21TH.toFixed(0)} TH)</div>
+                      <div className="text-sm">T21 190TH</div>
+                      <div className="text-xs">{fleetT21_190Percent}% ({t21_190TH.toFixed(0)} TH)</div>
                     </>
                   )}
                 </div>
                 <div 
                   className="bg-gradient-to-r from-green-500 to-green-600 flex flex-col items-center justify-center text-white font-semibold transition-all"
+                  style={{width: `${fleetT21_234Percent}%`}}
+                >
+                  {fleetT21_234Percent > 5 && (
+                    <>
+                      <div className="text-sm">T21 234TH</div>
+                      <div className="text-xs">{fleetT21_234Percent}% ({t21_234TH.toFixed(0)} TH)</div>
+                    </>
+                  )}
+                </div>
+                <div 
+                  className="bg-gradient-to-r from-purple-500 to-purple-600 flex flex-col items-center justify-center text-white font-semibold transition-all"
                   style={{width: `${fleetS21Percent}%`}}
                 >
-                  {fleetS21Percent > 10 && (
+                  {fleetS21Percent > 5 && (
                     <>
-                      <div className="text-lg">S21 Pro</div>
+                      <div className="text-sm">S21 Pro</div>
                       <div className="text-xs">{fleetS21Percent}% ({s21TH.toFixed(0)} TH)</div>
                     </>
                   )}
                 </div>
               </div>
               <div className="mt-3 text-sm text-gray-600 text-center">
-                💡 Измените состав парка с помощью ползунка в верхней панели
+                💡 Измените состав парка с помощью ползунков в верхней панели
               </div>
             </div>
           </div>
@@ -939,10 +985,10 @@ function App() {
                 <div className="bg-gradient-to-r from-green-600 to-emerald-600 text-white p-4 rounded-lg">
                   <div className="font-bold mb-2">5️⃣ ROI компании (первый год):</div>
                   <div className="font-mono text-xs bg-white/20 p-2 rounded mb-1">
-                    = (Общий доход / Себестоимость - 1) × 100%
+                    = (Общий доход / Себестоимость) × 100%
                   </div>
                   <div className="text-xl font-bold">
-                    = (${((tokenPrice - avgCostPerTH) + (clientCostPerKwh - companyCostPerKwh) * 365).toFixed(2)} / ${avgCostPerTH.toFixed(2)} - 1) × 100% = {((((tokenPrice - avgCostPerTH) + (clientCostPerKwh - companyCostPerKwh) * 365) / avgCostPerTH - 1) * 100).toFixed(1)}%
+                    = (${((tokenPrice - avgCostPerTH) + (clientCostPerKwh - companyCostPerKwh) * 365).toFixed(2)} / ${avgCostPerTH.toFixed(2)}) × 100% = {((((tokenPrice - avgCostPerTH) + (clientCostPerKwh - companyCostPerKwh) * 365) / avgCostPerTH) * 100).toFixed(1)}%
                   </div>
                   <div className="text-sm mt-2 opacity-90">
                     Маржа от ЭЭ: {((clientCostEE - companyCostEE) / companyCostEE * 100).toFixed(1)}%
@@ -1227,32 +1273,45 @@ function App() {
                     <th className="p-3 text-center">Доля в парке</th>
                     <th className="p-3 text-center">Мощность (TH)</th>
                     <th className="p-3 text-center">Количество</th>
+                    <th className="p-3 text-center">Потребление (кВт)</th>
                     <th className="p-3 text-center">Себестоимость/TH</th>
                     <th className="p-3 text-center">Эффективность</th>
                   </tr>
                 </thead>
                 <tbody className="text-sm">
                   <tr className="bg-blue-50 hover:bg-blue-100">
-                    <td className="p-3 font-semibold">T21</td>
-                    <td className="p-3 text-center font-bold">{fleetT21Percent}%</td>
-                    <td className="p-3 text-center">{t21TH.toFixed(0)} TH</td>
-                    <td className="p-3 text-center">{t21Count} шт</td>
-                    <td className="p-3 text-center">${t21CostPerTH.toFixed(2)}</td>
-                    <td className="p-3 text-center">{miners.T21.efficiency} Вт/TH</td>
+                    <td className="p-3 font-semibold">T21 190TH</td>
+                    <td className="p-3 text-center font-bold">{fleetT21_190Percent}%</td>
+                    <td className="p-3 text-center">{t21_190TH.toFixed(0)} TH</td>
+                    <td className="p-3 text-center">{t21_190Count} шт</td>
+                    <td className="p-3 text-center">{(t21_190Count * miners.T21_190.power / 1000).toFixed(1)} кВт</td>
+                    <td className="p-3 text-center">${t21_190CostPerTH.toFixed(2)}</td>
+                    <td className="p-3 text-center">{miners.T21_190.efficiency} Вт/TH</td>
                   </tr>
                   <tr className="bg-green-50 hover:bg-green-100">
+                    <td className="p-3 font-semibold">T21 234TH</td>
+                    <td className="p-3 text-center font-bold">{fleetT21_234Percent}%</td>
+                    <td className="p-3 text-center">{t21_234TH.toFixed(0)} TH</td>
+                    <td className="p-3 text-center">{t21_234Count} шт</td>
+                    <td className="p-3 text-center">{(t21_234Count * miners.T21_234.power / 1000).toFixed(1)} кВт</td>
+                    <td className="p-3 text-center">${t21_234CostPerTH.toFixed(2)}</td>
+                    <td className="p-3 text-center">{miners.T21_234.efficiency} Вт/TH</td>
+                  </tr>
+                  <tr className="bg-purple-50 hover:bg-purple-100">
                     <td className="p-3 font-semibold">S21 Pro</td>
                     <td className="p-3 text-center font-bold">{fleetS21Percent}%</td>
                     <td className="p-3 text-center">{s21TH.toFixed(0)} TH</td>
                     <td className="p-3 text-center">{s21Count} шт</td>
+                    <td className="p-3 text-center">{(s21Count * miners.S21Pro.power / 1000).toFixed(1)} кВт</td>
                     <td className="p-3 text-center">${s21CostPerTH.toFixed(2)}</td>
                     <td className="p-3 text-center">{miners.S21Pro.efficiency} Вт/TH</td>
                   </tr>
-                  <tr className="bg-purple-100 font-bold">
+                  <tr className="bg-gray-100 font-bold">
                     <td className="p-3">ИТОГО / СРЕДН</td>
                     <td className="p-3 text-center">100%</td>
                     <td className="p-3 text-center">{totalPoolTH.toLocaleString()} TH</td>
-                    <td className="p-3 text-center">{t21Count + s21Count} шт</td>
+                    <td className="p-3 text-center">{t21_190Count + t21_234Count + s21Count} шт</td>
+                    <td className="p-3 text-center">{(totalPowerMW * 1000).toFixed(1)} кВт</td>
                     <td className="p-3 text-center">${avgCostPerTH.toFixed(2)}</td>
                     <td className="p-3 text-center">{avgEfficiency.toFixed(1)} Вт/TH</td>
                   </tr>
@@ -1428,8 +1487,8 @@ function App() {
               </div>
               <div>
                 <span className="text-gray-600">ROI инвестора (год 1):</span>
-                <span className={`ml-2 font-bold ${calculatedScenarios[0]?.investorROI >= 33 ? 'text-green-600' : 'text-orange-600'}`}>
-                  {calculatedScenarios[0]?.investorROI.toFixed(1)}% {calculatedScenarios[0]?.investorROI >= 33 ? '✅' : '⚠️'}
+                <span className={`ml-2 font-bold ${poolCalculation.investorROI >= 33 ? 'text-green-600' : 'text-orange-600'}`}>
+                  {poolCalculation.investorROI.toFixed(1)}% {poolCalculation.investorROI >= 33 ? '✅' : '⚠️'}
                 </span>
               </div>
               <div>
@@ -1445,7 +1504,7 @@ function App() {
             <h3 className="font-bold text-yellow-900 mb-2">📝 Рекомендации:</h3>
             <ul className="space-y-2 text-sm text-gray-700">
               <li>• Для достижения ROI клиента 33% при росте сложности 47% нужен рост BTC минимум на 10-15% в год</li>
-              <li>• При текущей цене BTC ${btcPriceNow.toLocaleString()} ROI составляет ~{calculatedScenarios[0]?.investorROI.toFixed(1)}%</li>
+              <li>• При текущей цене BTC ${btcPriceNow.toLocaleString()} ROI составляет ~{poolCalculation.investorROI.toFixed(1)}%</li>
               <li>• Для компенсации роста сложности рекомендуется прогноз роста BTC до ${Math.round(btcPriceNow * 1.5).toLocaleString()} через 1-2 года</li>
               <li>• Срок жизни оборудования: 3 года - учитывайте снижение доходности каждый год на {difficultyGrowth}%</li>
             </ul>
@@ -1468,19 +1527,19 @@ function App() {
                 <div className="bg-white rounded-lg p-3 border border-orange-200">
                   <div className="text-sm text-gray-600">Год 1</div>
                   <div className="text-lg font-bold text-gray-900">
-                    ROI: {calculatedScenarios[0]?.investorROI.toFixed(1)}%
+                    ROI: {poolCalculation.investorROI.toFixed(1)}%
                   </div>
                 </div>
                 <div className="bg-white rounded-lg p-3 border border-orange-200">
                   <div className="text-sm text-gray-600">Год 2</div>
                   <div className="text-lg font-bold text-orange-700">
-                    ROI: {((calculatedScenarios[0]?.investorROI || 0) * (1 - difficultyGrowth/100)).toFixed(1)}%
+                    ROI: {(poolCalculation.investorROI * (1 - difficultyGrowth/100)).toFixed(1)}%
                   </div>
                 </div>
                 <div className="bg-white rounded-lg p-3 border border-orange-200">
                   <div className="text-sm text-gray-600">Год 3</div>
                   <div className="text-lg font-bold text-red-700">
-                    ROI: {((calculatedScenarios[0]?.investorROI || 0) * Math.pow(1 - difficultyGrowth/100, 2)).toFixed(1)}%
+                    ROI: {(poolCalculation.investorROI * Math.pow(1 - difficultyGrowth/100, 2)).toFixed(1)}%
                   </div>
                 </div>
               </div>
@@ -1488,136 +1547,107 @@ function App() {
           </div>
         </div>
 
-        {/* Сравнительная таблица */}
+        {/* Показатели пула */}
         <div className="bg-white rounded-2xl shadow-2xl p-6 mb-8 overflow-x-auto">
-          <h2 className="text-2xl font-bold mb-6 text-gray-800">📊 Сравнение сценариев</h2>
+          <h2 className="text-2xl font-bold mb-6 text-gray-800">📊 Показатели майнинг-пула</h2>
           
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white">
-                  <th className="px-4 py-3 text-left rounded-tl-lg">Параметр</th>
-                  {calculatedScenarios.map((s, idx) => (
-                    <th key={idx} className={`px-4 py-3 text-center ${idx === calculatedScenarios.length - 1 ? 'rounded-tr-lg' : ''}`}>
-                      {s.name}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                <tr className="hover:bg-gray-50">
-                  <td className="px-4 py-3 font-semibold">Токенов</td>
-                  {calculatedScenarios.map((s, idx) => (
-                    <td key={idx} className="px-4 py-3 text-center">{s.tokens.toLocaleString()}</td>
-                  ))}
-                </tr>
-                <tr className="hover:bg-gray-50">
-                  <td className="px-4 py-3 font-semibold">Асиков</td>
-                  {calculatedScenarios.map((s, idx) => (
-                    <td key={idx} className="px-4 py-3 text-center">{s.asics}</td>
-                  ))}
-                </tr>
-                <tr className="hover:bg-gray-50">
-                  <td className="px-4 py-3 font-semibold">Мощность (TH)</td>
-                  {calculatedScenarios.map((s, idx) => (
-                    <td key={idx} className="px-4 py-3 text-center">{s.totalTH.toLocaleString()}</td>
-                  ))}
-                </tr>
-                <tr className="hover:bg-gray-50 bg-red-50">
-                  <td className="px-4 py-3 font-semibold text-red-700">💸 Инвестиции</td>
-                  {calculatedScenarios.map((s, idx) => (
-                    <td key={idx} className="px-4 py-3 text-center font-bold text-red-700">
-                      ${s.totalInvestment.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                    </td>
-                  ))}
-                </tr>
-                <tr className="hover:bg-gray-50">
-                  <td className="px-4 py-3 font-semibold">От продажи токенов</td>
-                  {calculatedScenarios.map((s, idx) => (
-                    <td key={idx} className="px-4 py-3 text-center">
-                      ${s.tokenSalesRevenue.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                    </td>
-                  ))}
-                </tr>
-                <tr className="hover:bg-gray-50">
-                  <td className="px-4 py-3 font-semibold">От ЭЭ (год)</td>
-                  {calculatedScenarios.map((s, idx) => (
-                    <td key={idx} className="px-4 py-3 text-center">
-                      ${s.energyProfitPerYear.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                    </td>
-                  ))}
-                </tr>
-                <tr className="hover:bg-gray-50 bg-green-50">
-                  <td className="px-4 py-3 font-semibold text-green-700">💰 Итого за год 1</td>
-                  {calculatedScenarios.map((s, idx) => (
-                    <td key={idx} className="px-4 py-3 text-center font-bold text-green-700 text-lg">
-                      ${s.totalRevenueYear1.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                    </td>
-                  ))}
-                </tr>
-                <tr className="hover:bg-gray-50 bg-blue-50">
-                  <td className="px-4 py-3 font-semibold text-blue-700">🎯 ROI компании</td>
-                  {calculatedScenarios.map((s, idx) => (
-                    <td key={idx} className="px-4 py-3 text-center font-bold text-blue-700 text-lg">
-                      {s.companyROI.toFixed(1)}%
-                    </td>
-                  ))}
-                </tr>
-                <tr className="hover:bg-gray-50">
-                  <td className="px-4 py-3 font-semibold">Доход инвестора (день)</td>
-                  {calculatedScenarios.map((s, idx) => (
-                    <td key={idx} className="px-4 py-3 text-center">
-                      ${s.investorDailyRevenue.toFixed(4)}
-                    </td>
-                  ))}
-                </tr>
-                <tr className="hover:bg-gray-50">
-                  <td className="px-4 py-3 font-semibold">Доход инвестора (год)</td>
-                  {calculatedScenarios.map((s, idx) => (
-                    <td key={idx} className="px-4 py-3 text-center">
-                      ${s.investorAnnualRevenue.toFixed(2)}
-                    </td>
-                  ))}
-                </tr>
-                <tr className="hover:bg-gray-50 bg-purple-50">
-                  <td className="px-4 py-3 font-semibold text-purple-700">📈 ROI инвестора</td>
-                  {calculatedScenarios.map((s, idx) => (
-                    <td key={idx} className="px-4 py-3 text-center font-bold text-purple-700">
-                      {s.investorROI.toFixed(2)}% годовых
-                    </td>
-                  ))}
-                </tr>
-                <tr className="hover:bg-gray-50 bg-orange-50">
-                  <td className="px-4 py-3 font-semibold text-orange-700">⏱️ Окупаемость</td>
-                  {calculatedScenarios.map((s, idx) => (
-                    <td key={idx} className="px-4 py-3 text-center font-bold text-orange-700">
-                      {s.paybackYears.toFixed(2)} лет
-                    </td>
-                  ))}
-                </tr>
-              </tbody>
-            </table>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="bg-gradient-to-br from-blue-50 to-indigo-100 p-6 rounded-xl border-2 border-blue-200">
+              <h3 className="text-lg font-bold text-blue-900 mb-4">🏢 Параметры пула</h3>
+              <div className="space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Мощность:</span>
+                  <span className="font-bold">{poolCalculation.totalTH.toLocaleString()} TH</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Токенов:</span>
+                  <span className="font-bold">{poolCalculation.tokens.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Инвестиции:</span>
+                  <span className="font-bold text-red-600">
+                    ${poolCalculation.totalInvestment.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-br from-green-50 to-emerald-100 p-6 rounded-xl border-2 border-green-200">
+              <h3 className="text-lg font-bold text-green-900 mb-4">💰 Доходы компании</h3>
+              <div className="space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">От токенов:</span>
+                  <span className="font-bold text-green-600">
+                    ${poolCalculation.tokenSalesRevenue.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">От ЭЭ (год):</span>
+                  <span className="font-bold text-green-600">
+                    ${poolCalculation.energyProfitPerYear.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                  </span>
+                </div>
+                <div className="flex justify-between border-t pt-2">
+                  <span className="text-gray-700 font-semibold">Итого год 1:</span>
+                  <span className="font-bold text-green-700 text-lg">
+                    ${poolCalculation.totalRevenueYear1.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                  </span>
+                </div>
+                <div className="flex justify-between bg-blue-50 p-2 rounded">
+                  <span className="text-blue-700 font-semibold">ROI компании:</span>
+                  <span className="font-bold text-blue-700 text-xl">
+                    {poolCalculation.companyROI.toFixed(1)}%
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-br from-purple-50 to-pink-100 p-6 rounded-xl border-2 border-purple-200">
+              <h3 className="text-lg font-bold text-purple-900 mb-4">👤 Доходы инвестора</h3>
+              <div className="space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Доход (день):</span>
+                  <span className="font-bold">${poolCalculation.investorDailyRevenue.toFixed(4)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Доход (год):</span>
+                  <span className="font-bold">${poolCalculation.investorAnnualRevenue.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between bg-purple-50 p-2 rounded">
+                  <span className="text-purple-700 font-semibold">ROI инвестора:</span>
+                  <span className="font-bold text-purple-700 text-xl">
+                    {poolCalculation.investorROI.toFixed(2)}%
+                  </span>
+                </div>
+                <div className="flex justify-between bg-orange-50 p-2 rounded">
+                  <span className="text-orange-700 font-semibold">Окупаемость:</span>
+                  <span className="font-bold text-orange-700 text-lg">
+                    {poolCalculation.paybackYears.toFixed(2)} лет
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
         {/* График */}
         <div className="bg-white rounded-2xl shadow-2xl p-6 mb-8">
-          <h2 className="text-2xl font-bold mb-6 text-gray-800">📈 Динамика дохода компании (5 лет)</h2>
+          <h2 className="text-2xl font-bold mb-6 text-gray-800">📈 Динамика доходов и расходов (5 лет)</h2>
           
           <ResponsiveContainer width="100%" height={400}>
             <AreaChart data={chartData}>
               <defs>
-                <linearGradient id="colorScenario0" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8}/>
-                  <stop offset="95%" stopColor="#8884d8" stopOpacity={0}/>
+                <linearGradient id="colorClientRevenue" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/>
+                  <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
                 </linearGradient>
-                <linearGradient id="colorScenario1" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#82ca9d" stopOpacity={0.8}/>
-                  <stop offset="95%" stopColor="#82ca9d" stopOpacity={0}/>
+                <linearGradient id="colorCompanyRevenue" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8}/>
+                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
                 </linearGradient>
-                <linearGradient id="colorScenario2" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#ffc658" stopOpacity={0.8}/>
-                  <stop offset="95%" stopColor="#ffc658" stopOpacity={0}/>
+                <linearGradient id="colorElectricityCost" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#ef4444" stopOpacity={0.8}/>
+                  <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" />
@@ -1630,27 +1660,27 @@ function App() {
               <Legend />
               <Area 
                 type="monotone" 
-                dataKey="scenario0" 
-                stroke="#8884d8" 
+                dataKey="clientRevenue" 
+                stroke="#10b981" 
                 fillOpacity={1} 
-                fill="url(#colorScenario0)" 
-                name={calculatedScenarios[0]?.name}
+                fill="url(#colorClientRevenue)" 
+                name="Доходы клиента от майнинга"
               />
               <Area 
                 type="monotone" 
-                dataKey="scenario1" 
-                stroke="#82ca9d" 
+                dataKey="companyRevenue" 
+                stroke="#3b82f6" 
                 fillOpacity={1} 
-                fill="url(#colorScenario1)" 
-                name={calculatedScenarios[1]?.name}
+                fill="url(#colorCompanyRevenue)" 
+                name="Доходы компании"
               />
               <Area 
                 type="monotone" 
-                dataKey="scenario2" 
-                stroke="#ffc658" 
+                dataKey="clientElectricityCost" 
+                stroke="#ef4444" 
                 fillOpacity={1} 
-                fill="url(#colorScenario2)" 
-                name={calculatedScenarios[2]?.name}
+                fill="url(#colorElectricityCost)" 
+                name="Расходы клиента на ЭЭ"
               />
             </AreaChart>
           </ResponsiveContainer>
@@ -1765,54 +1795,6 @@ function App() {
           })()}
         </div>
 
-        {/* Карточки с ключевыми метриками */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          {calculatedScenarios.map((s, idx) => (
-            <div key={idx} className="bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-2xl p-6 border-2 border-gray-200 hover:border-purple-400 transition-all">
-              <h3 className="text-xl font-bold mb-4 text-gray-800 flex items-center justify-between">
-                <span>{s.name}</span>
-                <span className="text-3xl">
-                  {idx === 0 ? '🥉' : idx === 1 ? '🥈' : '🥇'}
-                </span>
-              </h3>
-              
-              <div className="space-y-3">
-                <div className="flex justify-between items-center pb-2 border-b">
-                  <span className="text-gray-600">Мощность:</span>
-                  <span className="font-bold text-lg">{s.totalTH.toLocaleString()} TH</span>
-                </div>
-                
-                <div className="flex justify-between items-center pb-2 border-b">
-                  <span className="text-gray-600">Инвестиции:</span>
-                  <span className="font-bold text-lg text-red-600">
-                    ${s.totalInvestment.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                  </span>
-                </div>
-                
-                <div className="flex justify-between items-center pb-2 border-b">
-                  <span className="text-gray-600">Доход (год 1):</span>
-                  <span className="font-bold text-lg text-green-600">
-                    ${s.totalRevenueYear1.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                  </span>
-                </div>
-                
-                <div className="flex justify-between items-center pb-2 border-b bg-gradient-to-r from-purple-50 to-indigo-50 p-2 rounded-lg">
-                  <span className="text-gray-700 font-semibold">ROI компании:</span>
-                  <span className="font-bold text-xl text-purple-700">
-                    {s.companyROI.toFixed(1)}%
-                  </span>
-                </div>
-                
-                <div className="flex justify-between items-center bg-gradient-to-r from-blue-50 to-cyan-50 p-2 rounded-lg">
-                  <span className="text-gray-700 font-semibold">ROI инвестора:</span>
-                  <span className="font-bold text-xl text-blue-700">
-                    {s.investorROI.toFixed(2)}%
-                  </span>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
 
         {/* Футер */}
         <div className="text-center text-white/80 mt-12">
