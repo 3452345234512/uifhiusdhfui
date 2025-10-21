@@ -13,10 +13,10 @@ function App() {
   
   // 2. Состав парка оборудования (портфель компании)
   const [fleetT21Percent, setFleetT21Percent] = useState(52) // % T21 190TH в парке
+  const [marginPercent, setMarginPercent] = useState(30) // Наценка компании на токены (%)
   const [totalPoolTH, setTotalPoolTH] = useState(5430) // Общая мощность пула в TH
   
-  // 3. Токены
-  const marginPercent = 20 // Фиксированная наценка 20%
+  // 3. Токены (наценка настраивается ползунком выше)
   
   // 4. Курс Bitcoin (из ViaBTC API)
   const [btcPriceNow, setBtcPriceNow] = useState(106497) // Курс BTC сейчас ($)
@@ -74,8 +74,7 @@ function App() {
     const t21PowerWatts = t21Count * miners.T21_190.power
     const s21PowerWatts = s21Count * miners.S21Pro.power
     const totalPowerWatts = t21PowerWatts + s21PowerWatts
-    const totalPowerWithInfrastructure = totalPowerWatts * 1.1 // +10% на инфраструктуру
-    const totalPowerMW = totalPowerWithInfrastructure / 1000000
+    const totalPowerMW = totalPowerWatts / 1000000
     
     return {
       t21TH,
@@ -89,13 +88,12 @@ function App() {
       totalPowerMW,
       t21PowerWatts,
       s21PowerWatts,
-      totalPowerWatts,
-      totalPowerWithInfrastructure
+      totalPowerWatts
     }
   }, [totalPoolTH, fleetT21Percent, fleetS21Percent])
 
   // Извлекаем значения из useMemo
-  const { t21TH, s21TH, t21Count, s21Count, t21CostPerTH, s21CostPerTH, avgCostPerTH, avgEfficiency, totalPowerMW, t21PowerWatts, s21PowerWatts, totalPowerWatts, totalPowerWithInfrastructure } = poolCalculations
+  const { t21TH, s21TH, t21Count, s21Count, t21CostPerTH, s21CostPerTH, avgCostPerTH, avgEfficiency, totalPowerMW, t21PowerWatts, s21PowerWatts, totalPowerWatts } = poolCalculations
   
   // Средневзвешенное энергопотребление 1 TH за 24 часа (кВт/день)
   const avgEnergyPerTH = (avgEfficiency * 1.1 * 24) / 1000
@@ -156,7 +154,7 @@ function App() {
     const investorDailyRevenue = miningRevenuePerTH - clientCostPerDay
     const investorAnnualRevenue = investorDailyRevenue * 365
     const investorROI = (investorAnnualRevenue / tokenPrice) * 100
-    const paybackYears = tokenPrice / investorAnnualRevenue
+    const paybackYears = investorAnnualRevenue > 0 ? tokenPrice / investorAnnualRevenue : 999 // Если убыточно, показываем 999 лет
     
     return {
       totalTH: scenarioTH,
@@ -526,7 +524,7 @@ function App() {
               <div className="text-white/70 text-xs font-semibold">Потребление</div>
               <div className="text-white font-bold text-lg">{totalPowerMW.toFixed(1)} МВт</div>
               <div className="text-white/60 text-xs mt-1">
-                = {totalPowerWatts.toLocaleString()}W + 10% инфраструктура
+                = {totalPowerWatts.toLocaleString()}W (только асики)
               </div>
               <div className="text-white/50 text-xs mt-1">
                 T21: {t21PowerWatts.toLocaleString()}W | S21: {s21PowerWatts.toLocaleString()}W
@@ -555,25 +553,51 @@ function App() {
             </div>
           </div>
           
-          {/* Ползунок состава парка */}
-          <div className="bg-white/10 backdrop-blur-sm rounded-lg px-4 py-3">
-            <div className="flex items-center gap-4">
-              <span className="text-white font-semibold text-sm whitespace-nowrap">🖥️ Состав парка:</span>
-              <div className="flex-1">
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={fleetT21Percent}
-                  onChange={(e) => setFleetT21Percent(parseInt(e.target.value))}
-                  className="w-full h-2 rounded-lg appearance-none cursor-pointer"
-                  style={{
-                    background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${fleetT21Percent}%, #10b981 ${fleetT21Percent}%, #10b981 100%)`
-                  }}
-                />
-                <div className="flex justify-between text-xs text-white/90 mt-1">
-                  <span>{fleetT21Percent}% T21 190TH ({(totalPoolTH * fleetT21Percent / 100).toFixed(0)} TH)</span>
-                  <span>{fleetS21Percent}% S21 Pro ({(totalPoolTH * fleetS21Percent / 100).toFixed(0)} TH)</span>
+          {/* Ползунки настроек */}
+          <div className="space-y-3">
+            {/* Состав парка */}
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg px-4 py-3">
+              <div className="flex items-center gap-4">
+                <span className="text-white font-semibold text-sm whitespace-nowrap">🖥️ Состав парка:</span>
+                <div className="flex-1">
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={fleetT21Percent}
+                    onChange={(e) => setFleetT21Percent(parseInt(e.target.value))}
+                    className="w-full h-2 rounded-lg appearance-none cursor-pointer"
+                    style={{
+                      background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${fleetT21Percent}%, #10b981 ${fleetT21Percent}%, #10b981 100%)`
+                    }}
+                  />
+                  <div className="flex justify-between text-xs text-white/90 mt-1">
+                    <span>{fleetT21Percent}% T21 190TH ({(totalPoolTH * fleetT21Percent / 100).toFixed(0)} TH)</span>
+                    <span>{fleetS21Percent}% S21 Pro ({(totalPoolTH * fleetS21Percent / 100).toFixed(0)} TH)</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Наценка на токены */}
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg px-4 py-3">
+              <div className="flex items-center gap-4">
+                <span className="text-white font-semibold text-sm whitespace-nowrap">💰 Наценка на токены:</span>
+                <div className="flex-1">
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={marginPercent}
+                    onChange={(e) => setMarginPercent(parseInt(e.target.value))}
+                    className="w-full h-2 rounded-lg appearance-none cursor-pointer"
+                    style={{
+                      background: `linear-gradient(to right, #10b981 0%, #10b981 ${marginPercent}%, #e5e7eb ${marginPercent}%, #e5e7eb 100%)`
+                    }}
+                  />
+                  <div className="text-xs text-white/90 mt-1">
+                    {marginPercent}% наценка = ${(avgCostPerTH * (1 + marginPercent / 100)).toFixed(2)} за токен
+                  </div>
                 </div>
               </div>
             </div>
@@ -1001,49 +1025,61 @@ function App() {
             <h4 className="font-bold text-blue-900 mb-3">⚡ Детальный расчет потребления пула:</h4>
             <div className="text-sm text-gray-700 space-y-2">
               <div className="bg-white p-3 rounded border">
-                <div className="font-semibold text-gray-800 mb-2">1️⃣ Потребление асиков:</div>
+                <div className="font-semibold text-gray-800 mb-2">Потребление асиков:</div>
                 <div className="ml-4 space-y-1">
                   <div>• T21 190TH: {t21Count} шт × {miners.T21_190.power}W = <strong>{t21PowerWatts.toLocaleString()}W</strong></div>
                   <div>• S21 Pro: {s21Count} шт × {miners.S21Pro.power}W = <strong>{s21PowerWatts.toLocaleString()}W</strong></div>
-                  <div className="border-t pt-1 font-semibold">Итого асиков: <strong>{totalPowerWatts.toLocaleString()}W</strong></div>
-                </div>
-              </div>
-              
-              <div className="bg-white p-3 rounded border">
-                <div className="font-semibold text-gray-800 mb-2">2️⃣ Инфраструктура (+10%):</div>
-                <div className="ml-4 space-y-1">
-                  <div>• Охлаждение и вентиляция</div>
-                  <div>• Сетевое оборудование (коммутаторы, роутеры)</div>
-                  <div>• ИБП и стабилизаторы</div>
-                  <div>• Потери в кабелях и соединениях</div>
-                  <div>• Освещение и мониторинг</div>
-                  <div className="border-t pt-1 font-semibold">Дополнительно: <strong>{(totalPowerWatts * 0.1).toLocaleString()}W</strong></div>
-                </div>
-              </div>
-              
-              <div className="bg-white p-3 rounded border">
-                <div className="font-semibold text-gray-800 mb-2">3️⃣ Общее потребление:</div>
-                <div className="ml-4 space-y-1">
-                  <div>• Асики: {totalPowerWatts.toLocaleString()}W</div>
-                  <div>• Инфраструктура: {(totalPowerWatts * 0.1).toLocaleString()}W</div>
-                  <div className="border-t pt-1 font-semibold text-lg">ИТОГО: <strong>{totalPowerWithInfrastructure.toLocaleString()}W</strong> = <strong>{totalPowerMW.toFixed(1)} МВт</strong></div>
+                  <div className="border-t pt-1 font-semibold text-lg">ИТОГО: <strong>{totalPowerWatts.toLocaleString()}W</strong> = <strong>{totalPowerMW.toFixed(1)} МВт</strong></div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Важные замечания */}
-          <div className="mt-6 p-4 bg-yellow-50 rounded-lg border-2 border-yellow-300">
-            <h4 className="font-bold text-yellow-900 mb-2">⚠️ Важные факторы:</h4>
-            <ul className="text-sm text-gray-700 space-y-1">
-              <li>• <strong>Рост сложности сети:</strong> {difficultyGrowth}% в год снижает доходность майнинга на тот же процент</li>
-              <li>• <strong>Изменение цены BTC:</strong> напрямую влияет на валовый доход инвестора</li>
-              <li>• <strong>Срок жизни оборудования:</strong> ~3 года, после чего эффективность падает</li>
-              <li>• <strong>Инфраструктура:</strong> +10% к энергопотреблению (сеть, охлаждение, контейнер, вентиляция, ИБП, потери в кабелях)</li>
-              <li>• <strong>Для компании:</strong> доход от токенов - единовременный, от ЭЭ - ежегодный</li>
-              <li>• <strong>Для инвестора:</strong> чистый доход = майнинг минус оплата ЭЭ</li>
-            </ul>
-          </div>
+          {/* Критический анализ сложности сети */}
+          <div className="mt-6 p-4 bg-red-50 rounded-lg border-2 border-red-300">
+            <h4 className="font-bold text-red-900 mb-3">🚨 КРИТИЧЕСКИ ВАЖНО: Рост сложности сети Bitcoin</h4>
+            <div className="text-sm text-gray-700 space-y-3">
+              <div className="bg-white p-3 rounded border">
+                <div className="font-semibold text-red-800 mb-2">📈 Сложность сети растет пиздец как быстро:</div>
+                <div className="ml-4 space-y-1">
+                  <div>• <strong>Текущий рост:</strong> {difficultyGrowth}% в год</div>
+                  <div>• <strong>Это означает:</strong> каждый год доходность майнинга падает на {difficultyGrowth}%</div>
+                  <div>• <strong>Через 3 года:</strong> доходность упадет в {(1 - difficultyGrowth/100) ** 3 * 100}% раз</div>
+                  <div>• <strong>Через 5 лет:</strong> доходность упадет в {(1 - difficultyGrowth/100) ** 5 * 100}% раз</div>
+                </div>
+              </div>
+              
+              <div className="bg-white p-3 rounded border">
+                <div className="font-semibold text-red-800 mb-2">💰 Что это означает для доходности:</div>
+                <div className="ml-4 space-y-1">
+                  <div>• <strong>Год 1:</strong> 100% от текущей доходности</div>
+                  <div>• <strong>Год 2:</strong> {((1 - difficultyGrowth/100) * 100).toFixed(1)}% от текущей доходности</div>
+                  <div>• <strong>Год 3:</strong> {(((1 - difficultyGrowth/100) ** 2) * 100).toFixed(1)}% от текущей доходности</div>
+                  <div>• <strong>Год 5:</strong> {(((1 - difficultyGrowth/100) ** 4) * 100).toFixed(1)}% от текущей доходности</div>
+                </div>
+              </div>
+              
+              <div className="bg-white p-3 rounded border">
+                <div className="font-semibold text-red-800 mb-2">🎯 Необходимая динамика курса BTC для сохранения доходности:</div>
+                <div className="ml-4 space-y-1">
+                  <div>• <strong>Год 1:</strong> BTC должен вырасти на {difficultyGrowth}% (до ${(btcPriceNow * (1 + difficultyGrowth/100)).toLocaleString()})</div>
+                  <div>• <strong>Год 2:</strong> BTC должен вырасти на {difficultyGrowth}% (до ${(btcPriceNow * ((1 + difficultyGrowth/100) ** 2)).toLocaleString()})</div>
+                  <div>• <strong>Год 3:</strong> BTC должен вырасти на {difficultyGrowth}% (до ${(btcPriceNow * ((1 + difficultyGrowth/100) ** 3)).toLocaleString()})</div>
+                  <div>• <strong>Год 5:</strong> BTC должен вырасти на {difficultyGrowth}% (до ${(btcPriceNow * ((1 + difficultyGrowth/100) ** 5)).toLocaleString()})</div>
+                </div>
+              </div>
+              
+              <div className="bg-white p-3 rounded border">
+                <div className="font-semibold text-red-800 mb-2">⚠️ Выводы:</div>
+                <div className="ml-4 space-y-1">
+                  <div>• <strong>Без роста курса BTC:</strong> майнинг станет убыточным через 2-3 года</div>
+                  <div>• <strong>Для окупаемости:</strong> BTC должен расти минимум на {difficultyGrowth}% в год</div>
+                  <div>• <strong>Риск:</strong> если курс BTC не растет, инвестор теряет деньги</div>
+                  <div>• <strong>Рекомендация:</strong> инвестировать только при уверенности в росте BTC</div>
+                </div>
+              </div>
+            </div>
+          </div> */}
         </div>
 
         {/* Таблица сценариев Bitcoin */}
@@ -1346,8 +1382,8 @@ function App() {
           </div>
           
 
-          {/* Симуляция на 3 года */}
-          <div className="bg-white p-6 rounded-xl border-2 border-purple-300">
+          {/* Симуляция на 3 года - УДАЛЕНА */}
+          {/* <div className="bg-white p-6 rounded-xl border-2 border-purple-300">
             <h3 className="text-xl font-bold text-purple-900 mb-4">📅 Прогноз доходности на 3 года</h3>
             <p className="text-sm text-gray-600 mb-4">
               С учётом падения доходности на {difficultyGrowth}% в год и роста BTC на 10-15% в год
