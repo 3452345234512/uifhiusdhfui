@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import './index.css'
 import App from './App.jsx'
+import LitecoinApp from './LitecoinApp.jsx'
 import DetailsPageWrapper from './DetailsPageWrapper.jsx'
 
 createRoot(document.getElementById('root')).render(
@@ -10,6 +11,7 @@ createRoot(document.getElementById('root')).render(
     <BrowserRouter basename="/uifhiusdhfui">
       <Routes>
         <Route path="/" element={<App />} />
+        <Route path="/litecoin" element={<LitecoinApp />} />
         <Route path="/details" element={<DetailsPageWrapper />} />
       </Routes>
     </BrowserRouter>

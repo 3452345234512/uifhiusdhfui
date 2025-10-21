@@ -1385,11 +1385,18 @@ function App() {
         </div>
       </div>
       
-      {/* Кнопка перехода на детальную страницу */}
-      <div className="fixed bottom-8 right-8 z-50">
+      {/* Кнопки навигации */}
+      <div className="fixed bottom-8 right-8 z-50 flex flex-col gap-3">
+        <Link 
+          to="/litecoin" 
+          className="flex items-center gap-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-6 py-4 rounded-full font-bold shadow-2xl hover:from-cyan-600 hover:to-blue-700 transition-all transform hover:scale-105"
+        >
+          <span className="text-2xl">🪙</span>
+          <span>Litecoin Pool</span>
+        </Link>
         <Link 
           to="/details" 
-          className="flex items-center gap-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-4 rounded-full font-bold shadow-2xl hover:from-green-600 hover:to-emerald-700 transition-all transform hover:scale-105 hover:shadow-3xl"
+          className="flex items-center gap-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-4 rounded-full font-bold shadow-2xl hover:from-green-600 hover:to-emerald-700 transition-all transform hover:scale-105"
         >
           <span className="text-2xl">📊</span>
           <span>Детальный анализ</span>
