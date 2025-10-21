@@ -7,7 +7,7 @@ import DetailsPageWrapper from './DetailsPageWrapper.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <BrowserRouter>
+    <BrowserRouter basename="/uifhiusdhfui">
       <Routes>
         <Route path="/" element={<App />} />
         <Route path="/details" element={<DetailsPageWrapper />} />
