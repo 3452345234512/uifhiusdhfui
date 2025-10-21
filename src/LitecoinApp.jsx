@@ -11,14 +11,21 @@ function LitecoinApp() {
   const [clientCostEE, setClientCostEE] = useState(6.2) // Продажа ЭЭ клиенту (₽/кВт⋅ч)
   
   // 2. Состав парка оборудования
-  const [totalPoolMH, setTotalPoolMH] = useState(16000) // Общая мощность пула в MH (1 асик)
+  const [minerCount, setMinerCount] = useState(1) // Количество асиков Antminer L9
   const [marginPercent, setMarginPercent] = useState(30) // Наценка компании на токены (%)
+  
+  // Общая мощность пула
+  const totalPoolMH = minerCount * 16000 // MH/s
   
   // 3. Курсы
   const [ltcPriceNow, setLtcPriceNow] = useState(95.43) // Курс LTC сейчас ($)
   const [dogePriceNow, setDogePriceNow] = useState(0.2027) // Курс DOGE сейчас ($)
-  const [ltcPerMHPerDay, setLtcPerMHPerDay] = useState(0.0001182) // LTC за MH/s в день (из ViaBTC)
-  const [dogePerMHPerDay, setDogePerMHPerDay] = useState(0.00405075) // DOGE за MH/s в день (из ViaBTC)
+  
+  // Доходность для 16 GH/s (16000 MH/s) из ViaBTC калькулятора
+  // LTC: 0.01891239 LTC/день для 16 GH/s
+  // DOGE: 64.72873183 DOGE/день для 16 GH/s
+  const [ltcPerMHPerDay, setLtcPerMHPerDay] = useState(0.01891239 / 16000) // LTC за MH/s в день
+  const [dogePerMHPerDay, setDogePerMHPerDay] = useState(64.72873183 / 16000) // DOGE за MH/s в день
 
   // Вспомогательные константы
   const usdtRate = 82 // Курс USDT к рублю
@@ -35,9 +42,6 @@ function LitecoinApp() {
   
   // РАСЧЁТ ПОКАЗАТЕЛЕЙ ПУЛА
   const poolCalculations = useMemo(() => {
-    // Количество асиков
-    const minerCount = Math.ceil(totalPoolMH / miner.hashrate)
-    
     // Себестоимость 1 MH
     const costPerMH = miner.price / miner.hashrate
     
@@ -46,14 +50,13 @@ function LitecoinApp() {
     const totalPowerMW = totalPowerWatts / 1000000
     
     return {
-      minerCount,
       costPerMH,
       totalPowerMW,
       totalPowerWatts
     }
-  }, [totalPoolMH])
+  }, [minerCount])
 
-  const { minerCount, costPerMH, totalPowerMW, totalPowerWatts } = poolCalculations
+  const { costPerMH, totalPowerMW, totalPowerWatts } = poolCalculations
   
   // Средневзвешенное энергопотребление 1 MH за 24 часа (кВт/день)
   const avgEnergyPerMH = (miner.efficiency * 24) / 1000
@@ -265,6 +268,28 @@ function LitecoinApp() {
       <div className="max-w-7xl mx-auto px-6">
         <div className="space-y-6">
           
+          {/* Настройка количества асиков */}
+          <div className="bg-white rounded-2xl shadow-2xl p-6">
+            <h3 className="text-lg font-semibold text-gray-700 mb-3 flex items-center gap-2">
+              <span className="text-purple-500">🖥️</span> Количество оборудования
+            </h3>
+            <div className="bg-purple-50 p-4 rounded-lg border-2 border-purple-300">
+              <label className="block text-sm font-semibold text-purple-700 mb-2">
+                Количество Antminer L9
+              </label>
+              <input
+                type="number"
+                value={minerCount}
+                onChange={(e) => setMinerCount(parseInt(e.target.value) || 1)}
+                min="1"
+                className="w-full px-4 py-2 text-2xl font-bold border-2 border-purple-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+              />
+              <div className="text-xs text-gray-600 mt-1">
+                Общая мощность: {totalPoolMH.toLocaleString()} MH/s ({minerCount} × {miner.hashrate.toLocaleString()} MH/s)
+              </div>
+            </div>
+          </div>
+          
           {/* Основные показатели */}
           <div className="bg-white rounded-2xl shadow-2xl p-6">
             <h2 className="text-2xl font-bold mb-6 text-gray-800">📊 Ключевые показатели пула</h2>
@@ -314,10 +339,49 @@ function LitecoinApp() {
             </div>
           </div>
 
-          {/* Токен H2C-LTC */}
+          {/* 1. ЭЛЕКТРОЭНЕРГИЯ */}
           <div className="bg-white rounded-2xl shadow-2xl p-6">
             <h3 className="text-lg font-semibold text-gray-700 mb-3 flex items-center gap-2">
-              <span className="text-cyan-500">💎</span> Токен HASH2CASH-LTC (H2C-LTC)
+              <span className="text-yellow-500">⚡</span> 1. Электроэнергия
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="bg-yellow-50 p-4 rounded-lg border-2 border-yellow-300">
+                <label className="block text-sm font-semibold text-yellow-700 mb-2">
+                  Себестоимость ЭЭ (₽/кВт⋅ч)
+                </label>
+                <input
+                  type="number"
+                  value={companyCostEE}
+                  onChange={(e) => setCompanyCostEE(parseFloat(e.target.value))}
+                  step="0.1"
+                  className="w-full px-4 py-2 text-2xl font-bold border-2 border-yellow-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                />
+                <div className="text-xs text-gray-600 mt-1">
+                  Стоимость для компании
+                </div>
+              </div>
+              <div className="bg-green-50 p-4 rounded-lg border-2 border-green-300">
+                <label className="block text-sm font-semibold text-green-700 mb-2">
+                  Продажа ЭЭ клиенту (₽/кВт⋅ч)
+                </label>
+                <input
+                  type="number"
+                  value={clientCostEE}
+                  onChange={(e) => setClientCostEE(parseFloat(e.target.value))}
+                  step="0.1"
+                  className="w-full px-4 py-2 text-2xl font-bold border-2 border-green-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+                <div className="text-xs text-gray-600 mt-1">
+                  С наценкой 10%: {((clientCostEE - companyCostEE) / companyCostEE * 100).toFixed(1)}%
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 2. Токен H2C-LTC */}
+          <div className="bg-white rounded-2xl shadow-2xl p-6">
+            <h3 className="text-lg font-semibold text-gray-700 mb-3 flex items-center gap-2">
+              <span className="text-cyan-500">💎</span> 2. Токен HASH2CASH-LTC (H2C-LTC)
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="bg-gray-50 p-4 rounded-lg border-2 border-gray-300">

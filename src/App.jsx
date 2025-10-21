@@ -55,20 +55,20 @@ function App() {
   
   // Расчеты, зависящие от состава парка
   const poolCalculations = useMemo(() => {
-    // Количество TH каждой модели в пуле
-    const t21TH = (totalPoolTH * fleetT21Percent) / 100
-    const s21TH = (totalPoolTH * fleetS21Percent) / 100
-    
-    // Количество асиков каждой модели
+  // Количество TH каждой модели в пуле
+  const t21TH = (totalPoolTH * fleetT21Percent) / 100
+  const s21TH = (totalPoolTH * fleetS21Percent) / 100
+  
+  // Количество асиков каждой модели
     const t21Count = Math.ceil(t21TH / miners.T21_190.hashrate)
-    const s21Count = Math.ceil(s21TH / miners.S21Pro.hashrate)
-    
-    // Средневзвешенная себестоимость 1 TH
+  const s21Count = Math.ceil(s21TH / miners.S21Pro.hashrate)
+  
+  // Средневзвешенная себестоимость 1 TH
     const t21CostPerTH = miners.T21_190.price / miners.T21_190.hashrate
-    const s21CostPerTH = miners.S21Pro.price / miners.S21Pro.hashrate
-    const avgCostPerTH = (t21CostPerTH * fleetT21Percent + s21CostPerTH * fleetS21Percent) / 100
-    
-    // Средневзвешенная энергоэффективность (Вт/TH)
+  const s21CostPerTH = miners.S21Pro.price / miners.S21Pro.hashrate
+  const avgCostPerTH = (t21CostPerTH * fleetT21Percent + s21CostPerTH * fleetS21Percent) / 100
+  
+  // Средневзвешенная энергоэффективность (Вт/TH)
     const avgEfficiency = (miners.T21_190.efficiency * fleetT21Percent + miners.S21Pro.efficiency * fleetS21Percent) / 100
     
     // Общее потребление пула
@@ -185,30 +185,30 @@ function App() {
     for (let year = 0; year <= years; year++) {
       const dataPoint = { year: `Год ${year}` }
       
-      if (year === 0) {
+        if (year === 0) {
         dataPoint.clientRevenue = 0
         dataPoint.companyRevenue = 0
         dataPoint.clientElectricityCost = 0
-      } else {
-        // Коэффициент снижения доходности из-за роста сложности
-        const miningRevenueFactor = Math.pow(1 - (difficultyGrowth / 100), year - 1)
-        
+        } else {
+          // Коэффициент снижения доходности из-за роста сложности
+          const miningRevenueFactor = Math.pow(1 - (difficultyGrowth / 100), year - 1)
+          
         // Доход клиента от майнинга (с учётом падения доходности)
         const adjustedMiningRevenue = poolCalculation.investorAnnualRevenue * miningRevenueFactor
         dataPoint.clientRevenue = adjustedMiningRevenue
-        
+          
         // Расходы клиента на ЭЭ (постоянные)
         dataPoint.clientElectricityCost = clientCostPerKwh * totalPoolTH * 365
         
         // Доход компании
-        if (year === 1) {
-          // Первый год: продажа токенов + ЭЭ
+          if (year === 1) {
+            // Первый год: продажа токенов + ЭЭ
           dataPoint.companyRevenue = poolCalculation.tokenSalesRevenue + poolCalculation.energyProfitPerYear
-        } else {
+          } else {
           // Последующие годы: только ЭЭ
           dataPoint.companyRevenue = poolCalculation.energyProfitPerYear
+          }
         }
-      }
       
       data.push(dataPoint)
     }
@@ -297,31 +297,31 @@ function App() {
     text += `• Маржа ЭЭ: ${((clientCostEE - companyCostEE) / companyCostEE * 100).toFixed(1)}% (не критично)\n\n`
     
     // Показатели пула
-    text += `\n${'═'.repeat(43)}\n`
+      text += `\n${'═'.repeat(43)}\n`
     text += `📦 МАЙНИНГ-ПУЛ HASH2CASH\n`
-    text += `${'═'.repeat(43)}\n`
+      text += `${'═'.repeat(43)}\n`
     text += `• Токенов: ${poolCalculation.tokens.toLocaleString()}\n`
     text += `• Мощность: ${poolCalculation.totalTH.toLocaleString()} TH\n`
     text += `• Инвестиции: $${poolCalculation.totalInvestment.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}\n\n`
-    text += `💰 ДОХОД КОМПАНИИ (год 1):\n`
+      text += `💰 ДОХОД КОМПАНИИ (год 1):\n`
     text += `• От продажи токенов: $${poolCalculation.tokenSalesRevenue.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}\n`
     text += `• От электроэнергии: $${poolCalculation.energyProfitPerYear.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}\n`
     text += `• ИТОГО: $${poolCalculation.totalRevenueYear1.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}\n`
     text += `• ROI компании: ${poolCalculation.companyROI.toFixed(1)}%\n\n`
-    text += `📈 ДОХОДНОСТЬ ИНВЕСТОРА (при текущей сложности):\n`
+      text += `📈 ДОХОДНОСТЬ ИНВЕСТОРА (при текущей сложности):\n`
     text += `• Чистый доход: $${poolCalculation.investorDailyRevenue.toFixed(4)}/день\n`
     text += `• Годовой доход: $${poolCalculation.investorAnnualRevenue.toFixed(2)}\n`
     text += `• ROI: ${poolCalculation.investorROI.toFixed(2)}% годовых\n`
     text += `• Окупаемость: ${poolCalculation.paybackYears.toFixed(2)} лет\n\n`
-    
-    // Добавим прогноз с учётом роста сложности
-    text += `📉 ПРОГНОЗ С УЧЁТОМ РОСТА СЛОЖНОСТИ (${difficultyGrowth}%):\n`
-    for (let year = 1; year <= 3; year++) {
-      const factor = Math.pow(1 - (difficultyGrowth / 100), year - 1)
+      
+      // Добавим прогноз с учётом роста сложности
+      text += `📉 ПРОГНОЗ С УЧЁТОМ РОСТА СЛОЖНОСТИ (${difficultyGrowth}%):\n`
+      for (let year = 1; year <= 3; year++) {
+        const factor = Math.pow(1 - (difficultyGrowth / 100), year - 1)
       const adjustedRevenue = poolCalculation.investorAnnualRevenue * factor
-      const adjustedROI = (adjustedRevenue / tokenPrice) * 100
-      text += `• Год ${year}: доход $${adjustedRevenue.toFixed(2)} (ROI ${adjustedROI.toFixed(2)}%)\n`
-    }
+        const adjustedROI = (adjustedRevenue / tokenPrice) * 100
+        text += `• Год ${year}: доход $${adjustedRevenue.toFixed(2)} (ROI ${adjustedROI.toFixed(2)}%)\n`
+      }
     
     text += `\n${'═'.repeat(43)}\n`
     text += `Дата создания: ${new Date().toLocaleString('ru-RU')}\n`
@@ -557,22 +557,22 @@ function App() {
           {/* Ползунки настроек */}
           <div className="space-y-3">
             {/* Состав парка */}
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg px-4 py-3">
-              <div className="flex items-center gap-4">
-                <span className="text-white font-semibold text-sm whitespace-nowrap">🖥️ Состав парка:</span>
-                <div className="flex-1">
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    value={fleetT21Percent}
-                    onChange={(e) => setFleetT21Percent(parseInt(e.target.value))}
-                    className="w-full h-2 rounded-lg appearance-none cursor-pointer"
-                    style={{
-                      background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${fleetT21Percent}%, #10b981 ${fleetT21Percent}%, #10b981 100%)`
-                    }}
-                  />
-                  <div className="flex justify-between text-xs text-white/90 mt-1">
+          <div className="bg-white/10 backdrop-blur-sm rounded-lg px-4 py-3">
+            <div className="flex items-center gap-4">
+              <span className="text-white font-semibold text-sm whitespace-nowrap">🖥️ Состав парка:</span>
+              <div className="flex-1">
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={fleetT21Percent}
+                  onChange={(e) => setFleetT21Percent(parseInt(e.target.value))}
+                  className="w-full h-2 rounded-lg appearance-none cursor-pointer"
+                  style={{
+                    background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${fleetT21Percent}%, #10b981 ${fleetT21Percent}%, #10b981 100%)`
+                  }}
+                />
+                <div className="flex justify-between text-xs text-white/90 mt-1">
                     <span>{fleetT21Percent}% T21 190TH ({(totalPoolTH * fleetT21Percent / 100).toFixed(0)} TH)</span>
                     <span>{fleetS21Percent}% S21 Pro ({(totalPoolTH * fleetS21Percent / 100).toFixed(0)} TH)</span>
                   </div>
@@ -607,6 +607,29 @@ function App() {
       </div>
 
       <div className="max-w-7xl mx-auto">
+
+        {/* Настройка мощности пула */}
+        <div className="bg-white rounded-2xl shadow-2xl p-6 mb-8">
+          <h3 className="text-lg font-semibold text-gray-700 mb-3 flex items-center gap-2">
+            <span className="text-purple-500">🖥️</span> Общая мощность пула
+          </h3>
+          <div className="bg-purple-50 p-4 rounded-lg border-2 border-purple-300">
+            <label className="block text-sm font-semibold text-purple-700 mb-2">
+              Мощность пула (TH/s)
+            </label>
+            <input
+              type="number"
+              value={totalPoolTH}
+              onChange={(e) => setTotalPoolTH(parseInt(e.target.value) || 1)}
+              min="1"
+              step="100"
+              className="w-full px-4 py-2 text-2xl font-bold border-2 border-purple-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+            />
+            <div className="text-xs text-gray-600 mt-1">
+              Количество асиков: T21 ({t21Count} шт) + S21 Pro ({s21Count} шт) = {t21Count + s21Count} шт
+            </div>
+          </div>
+        </div>
 
         {/* Панель настроек */}
         <div className="bg-white rounded-2xl shadow-2xl p-6 mb-8">
@@ -882,7 +905,7 @@ function App() {
               <strong>Прибыль от токена:</strong> ${(tokenPrice - avgCostPerTH).toFixed(2)}
               {' | '}
               <strong>ROI инвестора:</strong> ~{avgROI.toFixed(1)}% годовых
-      </div>
+            </div>
           </div>
         </div>
 
@@ -1033,7 +1056,7 @@ function App() {
                   <div className="border-t pt-1 font-semibold text-lg">ИТОГО: <strong>{totalPowerWatts.toLocaleString()}W</strong> = <strong>{totalPowerMW.toFixed(1)} МВт</strong></div>
                 </div>
               </div>
-            </div>
+          </div>
           </div>
 
           {/* Критический анализ сложности сети */}
@@ -1382,9 +1405,9 @@ function App() {
             </div>
           </div>
           
-        </div>
-      </div>
-      
+                          </div>
+            </div>
+            
       {/* Кнопки навигации */}
       <div className="fixed bottom-8 right-8 z-50 flex flex-col gap-3">
         <Link 
