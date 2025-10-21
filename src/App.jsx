@@ -12,8 +12,7 @@ function App() {
   const [clientCostEE, setClientCostEE] = useState(6.2) // Продажа ЭЭ клиенту (₽/кВт⋅ч)
   
   // 2. Состав парка оборудования (портфель компании)
-  const [fleetT21_190Percent, setFleetT21_190Percent] = useState(30) // % T21 190TH в парке
-  const [fleetT21_234Percent, setFleetT21_234Percent] = useState(22) // % T21 234TH в парке
+  const [fleetT21Percent, setFleetT21Percent] = useState(52) // % T21 190TH в парке
   const [totalPoolTH, setTotalPoolTH] = useState(5430) // Общая мощность пула в TH
   
   // 3. Токены
@@ -41,13 +40,6 @@ function App() {
       price: 2050, // USD
       efficiency: 19 // Вт/TH
     },
-    'T21_234': {
-      name: 'Antminer T21 (234TH)',
-      hashrate: 234, // TH
-      power: 3510, // Вт
-      price: 2500, // USD (примерная цена)
-      efficiency: 15 // Вт/TH
-    },
     'S21Pro': {
       name: 'Antminer S21 Pro',
       hashrate: 245, // TH
@@ -58,29 +50,26 @@ function App() {
   }
   
   // РАСЧЁТ СРЕДНЕВЗВЕШЕННЫХ ПОКАЗАТЕЛЕЙ ПУЛА
-  const fleetS21Percent = 100 - fleetT21_190Percent - fleetT21_234Percent
+  const fleetS21Percent = 100 - fleetT21Percent
   
   // Количество TH каждой модели в пуле
-  const t21_190TH = (totalPoolTH * fleetT21_190Percent) / 100
-  const t21_234TH = (totalPoolTH * fleetT21_234Percent) / 100
+  const t21TH = (totalPoolTH * fleetT21Percent) / 100
   const s21TH = (totalPoolTH * fleetS21Percent) / 100
   
   // Количество асиков каждой модели
-  const t21_190Count = Math.ceil(t21_190TH / miners.T21_190.hashrate)
-  const t21_234Count = Math.ceil(t21_234TH / miners.T21_234.hashrate)
+  const t21Count = Math.ceil(t21TH / miners.T21_190.hashrate)
   const s21Count = Math.ceil(s21TH / miners.S21Pro.hashrate)
   
   // Средневзвешенная себестоимость 1 TH
-  const t21_190CostPerTH = miners.T21_190.price / miners.T21_190.hashrate
-  const t21_234CostPerTH = miners.T21_234.price / miners.T21_234.hashrate
+  const t21CostPerTH = miners.T21_190.price / miners.T21_190.hashrate
   const s21CostPerTH = miners.S21Pro.price / miners.S21Pro.hashrate
-  const avgCostPerTH = (t21_190CostPerTH * fleetT21_190Percent + t21_234CostPerTH * fleetT21_234Percent + s21CostPerTH * fleetS21Percent) / 100
+  const avgCostPerTH = (t21CostPerTH * fleetT21Percent + s21CostPerTH * fleetS21Percent) / 100
   
   // Средневзвешенная энергоэффективность (Вт/TH)
-  const avgEfficiency = (miners.T21_190.efficiency * fleetT21_190Percent + miners.T21_234.efficiency * fleetT21_234Percent + miners.S21Pro.efficiency * fleetS21Percent) / 100
+  const avgEfficiency = (miners.T21_190.efficiency * fleetT21Percent + miners.S21Pro.efficiency * fleetS21Percent) / 100
   
   // Общее потребление пула (МВт) - правильный расчет
-  const totalPowerMW = ((t21_190Count * miners.T21_190.power) + (t21_234Count * miners.T21_234.power) + (s21Count * miners.S21Pro.power)) * 1.1 / 1000000
+  const totalPowerMW = ((t21Count * miners.T21_190.power) + (s21Count * miners.S21Pro.power)) * 1.1 / 1000000
   
   // Средневзвешенное энергопотребление 1 TH за 24 часа (кВт/день)
   const avgEnergyPerTH = (avgEfficiency * 1.1 * 24) / 1000
@@ -517,55 +506,25 @@ function App() {
             </div>
           </div>
           
-          {/* Ползунки состава парка */}
+          {/* Ползунок состава парка */}
           <div className="bg-white/10 backdrop-blur-sm rounded-lg px-4 py-3">
-            <div className="space-y-3">
-              <div className="flex items-center gap-4">
-                <span className="text-white font-semibold text-sm whitespace-nowrap">🖥️ T21 190TH:</span>
-                <div className="flex-1">
-                  <input
-                    type="range"
-                    min="0"
-                    max="50"
-                    value={fleetT21_190Percent}
-                    onChange={(e) => setFleetT21_190Percent(parseInt(e.target.value))}
-                    className="w-full h-2 rounded-lg appearance-none cursor-pointer"
-                    style={{
-                      background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${fleetT21_190Percent * 2}%, #e5e7eb ${fleetT21_190Percent * 2}%, #e5e7eb 100%)`
-                    }}
-                  />
-                  <div className="text-xs text-white/90 mt-1">
-                    {fleetT21_190Percent}% T21 190TH ({(totalPoolTH * fleetT21_190Percent / 100).toFixed(0)} TH)
-                  </div>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-4">
-                <span className="text-white font-semibold text-sm whitespace-nowrap">🖥️ T21 234TH:</span>
-                <div className="flex-1">
-                  <input
-                    type="range"
-                    min="0"
-                    max="50"
-                    value={fleetT21_234Percent}
-                    onChange={(e) => setFleetT21_234Percent(parseInt(e.target.value))}
-                    className="w-full h-2 rounded-lg appearance-none cursor-pointer"
-                    style={{
-                      background: `linear-gradient(to right, #10b981 0%, #10b981 ${fleetT21_234Percent * 2}%, #e5e7eb ${fleetT21_234Percent * 2}%, #e5e7eb 100%)`
-                    }}
-                  />
-                  <div className="text-xs text-white/90 mt-1">
-                    {fleetT21_234Percent}% T21 234TH ({(totalPoolTH * fleetT21_234Percent / 100).toFixed(0)} TH)
-                  </div>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-4">
-                <span className="text-white font-semibold text-sm whitespace-nowrap">🖥️ S21 Pro:</span>
-                <div className="flex-1">
-                  <div className="text-xs text-white/90 mt-1">
-                    {fleetS21Percent}% S21 Pro ({(totalPoolTH * fleetS21Percent / 100).toFixed(0)} TH)
-                  </div>
+            <div className="flex items-center gap-4">
+              <span className="text-white font-semibold text-sm whitespace-nowrap">🖥️ Состав парка:</span>
+              <div className="flex-1">
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={fleetT21Percent}
+                  onChange={(e) => setFleetT21Percent(parseInt(e.target.value))}
+                  className="w-full h-2 rounded-lg appearance-none cursor-pointer"
+                  style={{
+                    background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${fleetT21Percent}%, #10b981 ${fleetT21Percent}%, #10b981 100%)`
+                  }}
+                />
+                <div className="flex justify-between text-xs text-white/90 mt-1">
+                  <span>{fleetT21Percent}% T21 190TH ({(totalPoolTH * fleetT21Percent / 100).toFixed(0)} TH)</span>
+                  <span>{fleetS21Percent}% S21 Pro ({(totalPoolTH * fleetS21Percent / 100).toFixed(0)} TH)</span>
                 </div>
               </div>
             </div>
@@ -614,40 +573,29 @@ function App() {
               <div className="flex h-12 rounded-lg overflow-hidden shadow-lg">
                 <div 
                   className="bg-gradient-to-r from-blue-500 to-blue-600 flex flex-col items-center justify-center text-white font-semibold transition-all"
-                  style={{width: `${fleetT21_190Percent}%`}}
+                  style={{width: `${fleetT21Percent}%`}}
                 >
-                  {fleetT21_190Percent > 5 && (
+                  {fleetT21Percent > 10 && (
                     <>
-                      <div className="text-sm">T21 190TH</div>
-                      <div className="text-xs">{fleetT21_190Percent}% ({t21_190TH.toFixed(0)} TH)</div>
+                      <div className="text-lg">T21 190TH</div>
+                      <div className="text-xs">{fleetT21Percent}% ({t21TH.toFixed(0)} TH)</div>
                     </>
                   )}
                 </div>
                 <div 
                   className="bg-gradient-to-r from-green-500 to-green-600 flex flex-col items-center justify-center text-white font-semibold transition-all"
-                  style={{width: `${fleetT21_234Percent}%`}}
-                >
-                  {fleetT21_234Percent > 5 && (
-                    <>
-                      <div className="text-sm">T21 234TH</div>
-                      <div className="text-xs">{fleetT21_234Percent}% ({t21_234TH.toFixed(0)} TH)</div>
-                    </>
-                  )}
-                </div>
-                <div 
-                  className="bg-gradient-to-r from-purple-500 to-purple-600 flex flex-col items-center justify-center text-white font-semibold transition-all"
                   style={{width: `${fleetS21Percent}%`}}
                 >
-                  {fleetS21Percent > 5 && (
+                  {fleetS21Percent > 10 && (
                     <>
-                      <div className="text-sm">S21 Pro</div>
+                      <div className="text-lg">S21 Pro</div>
                       <div className="text-xs">{fleetS21Percent}% ({s21TH.toFixed(0)} TH)</div>
                     </>
                   )}
                 </div>
               </div>
               <div className="mt-3 text-sm text-gray-600 text-center">
-                💡 Измените состав парка с помощью ползунков в верхней панели
+                💡 Измените состав парка с помощью ползунка в верхней панели
               </div>
             </div>
           </div>
@@ -1281,23 +1229,14 @@ function App() {
                 <tbody className="text-sm">
                   <tr className="bg-blue-50 hover:bg-blue-100">
                     <td className="p-3 font-semibold">T21 190TH</td>
-                    <td className="p-3 text-center font-bold">{fleetT21_190Percent}%</td>
-                    <td className="p-3 text-center">{t21_190TH.toFixed(0)} TH</td>
-                    <td className="p-3 text-center">{t21_190Count} шт</td>
-                    <td className="p-3 text-center">{(t21_190Count * miners.T21_190.power / 1000).toFixed(1)} кВт</td>
-                    <td className="p-3 text-center">${t21_190CostPerTH.toFixed(2)}</td>
+                    <td className="p-3 text-center font-bold">{fleetT21Percent}%</td>
+                    <td className="p-3 text-center">{t21TH.toFixed(0)} TH</td>
+                    <td className="p-3 text-center">{t21Count} шт</td>
+                    <td className="p-3 text-center">{(t21Count * miners.T21_190.power / 1000).toFixed(1)} кВт</td>
+                    <td className="p-3 text-center">${t21CostPerTH.toFixed(2)}</td>
                     <td className="p-3 text-center">{miners.T21_190.efficiency} Вт/TH</td>
                   </tr>
                   <tr className="bg-green-50 hover:bg-green-100">
-                    <td className="p-3 font-semibold">T21 234TH</td>
-                    <td className="p-3 text-center font-bold">{fleetT21_234Percent}%</td>
-                    <td className="p-3 text-center">{t21_234TH.toFixed(0)} TH</td>
-                    <td className="p-3 text-center">{t21_234Count} шт</td>
-                    <td className="p-3 text-center">{(t21_234Count * miners.T21_234.power / 1000).toFixed(1)} кВт</td>
-                    <td className="p-3 text-center">${t21_234CostPerTH.toFixed(2)}</td>
-                    <td className="p-3 text-center">{miners.T21_234.efficiency} Вт/TH</td>
-                  </tr>
-                  <tr className="bg-purple-50 hover:bg-purple-100">
                     <td className="p-3 font-semibold">S21 Pro</td>
                     <td className="p-3 text-center font-bold">{fleetS21Percent}%</td>
                     <td className="p-3 text-center">{s21TH.toFixed(0)} TH</td>
@@ -1310,7 +1249,7 @@ function App() {
                     <td className="p-3">ИТОГО / СРЕДН</td>
                     <td className="p-3 text-center">100%</td>
                     <td className="p-3 text-center">{totalPoolTH.toLocaleString()} TH</td>
-                    <td className="p-3 text-center">{t21_190Count + t21_234Count + s21Count} шт</td>
+                    <td className="p-3 text-center">{t21Count + s21Count} шт</td>
                     <td className="p-3 text-center">{(totalPowerMW * 1000).toFixed(1)} кВт</td>
                     <td className="p-3 text-center">${avgCostPerTH.toFixed(2)}</td>
                     <td className="p-3 text-center">{avgEfficiency.toFixed(1)} Вт/TH</td>
