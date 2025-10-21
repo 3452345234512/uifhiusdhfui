@@ -1418,6 +1418,13 @@ function App() {
           <span>Litecoin Pool</span>
         </Link>
         <Link 
+          to="/mixed" 
+          className="flex items-center gap-3 bg-gradient-to-r from-purple-500 to-pink-600 text-white px-6 py-4 rounded-full font-bold shadow-2xl hover:from-purple-600 hover:to-pink-700 transition-all transform hover:scale-105"
+        >
+          <span className="text-2xl">🔀</span>
+          <span>Mixed Pool</span>
+        </Link>
+        <Link 
           to="/details" 
           className="flex items-center gap-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-4 rounded-full font-bold shadow-2xl hover:from-green-600 hover:to-emerald-700 transition-all transform hover:scale-105"
         >
