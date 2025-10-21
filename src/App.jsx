@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react'
+import { Link } from 'react-router-dom'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, ComposedChart } from 'recharts'
 import * as XLSX from 'xlsx'
 import historicalData from './difficulty.json'
@@ -1382,6 +1383,17 @@ function App() {
           </div>
           
         </div>
+      </div>
+      
+      {/* Кнопка перехода на детальную страницу */}
+      <div className="fixed bottom-8 right-8 z-50">
+        <Link 
+          to="/details" 
+          className="flex items-center gap-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-4 rounded-full font-bold shadow-2xl hover:from-green-600 hover:to-emerald-700 transition-all transform hover:scale-105 hover:shadow-3xl"
+        >
+          <span className="text-2xl">📊</span>
+          <span>Детальный анализ</span>
+        </Link>
       </div>
     </div>
   )
