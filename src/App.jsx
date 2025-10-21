@@ -52,30 +52,53 @@ function App() {
   // РАСЧЁТ СРЕДНЕВЗВЕШЕННЫХ ПОКАЗАТЕЛЕЙ ПУЛА
   const fleetS21Percent = 100 - fleetT21Percent
   
-  // Количество TH каждой модели в пуле
-  const t21TH = (totalPoolTH * fleetT21Percent) / 100
-  const s21TH = (totalPoolTH * fleetS21Percent) / 100
-  
-  // Количество асиков каждой модели
-  const t21Count = Math.ceil(t21TH / miners.T21_190.hashrate)
-  const s21Count = Math.ceil(s21TH / miners.S21Pro.hashrate)
-  
-  // Средневзвешенная себестоимость 1 TH
-  const t21CostPerTH = miners.T21_190.price / miners.T21_190.hashrate
-  const s21CostPerTH = miners.S21Pro.price / miners.S21Pro.hashrate
-  const avgCostPerTH = (t21CostPerTH * fleetT21Percent + s21CostPerTH * fleetS21Percent) / 100
-  
-  // Средневзвешенная энергоэффективность (Вт/TH)
-  const avgEfficiency = (miners.T21_190.efficiency * fleetT21Percent + miners.S21Pro.efficiency * fleetS21Percent) / 100
-  
-  // Общее потребление пула (МВт) - правильный расчет
-  const totalPowerMW = ((t21Count * miners.T21_190.power) + (s21Count * miners.S21Pro.power)) * 1.1 / 1000000
+  // Расчеты, зависящие от состава парка
+  const poolCalculations = useMemo(() => {
+    // Количество TH каждой модели в пуле
+    const t21TH = (totalPoolTH * fleetT21Percent) / 100
+    const s21TH = (totalPoolTH * fleetS21Percent) / 100
+    
+    // Количество асиков каждой модели
+    const t21Count = Math.ceil(t21TH / miners.T21_190.hashrate)
+    const s21Count = Math.ceil(s21TH / miners.S21Pro.hashrate)
+    
+    // Средневзвешенная себестоимость 1 TH
+    const t21CostPerTH = miners.T21_190.price / miners.T21_190.hashrate
+    const s21CostPerTH = miners.S21Pro.price / miners.S21Pro.hashrate
+    const avgCostPerTH = (t21CostPerTH * fleetT21Percent + s21CostPerTH * fleetS21Percent) / 100
+    
+    // Средневзвешенная энергоэффективность (Вт/TH)
+    const avgEfficiency = (miners.T21_190.efficiency * fleetT21Percent + miners.S21Pro.efficiency * fleetS21Percent) / 100
+    
+    // Общее потребление пула (МВт)
+    const totalPowerMW = ((t21Count * miners.T21_190.power) + (s21Count * miners.S21Pro.power)) * 1.1 / 1000000
+    
+    return {
+      t21TH,
+      s21TH,
+      t21Count,
+      s21Count,
+      t21CostPerTH,
+      s21CostPerTH,
+      avgCostPerTH,
+      avgEfficiency,
+      totalPowerMW
+    }
+  }, [totalPoolTH, fleetT21Percent, fleetS21Percent])
+
+  // Извлекаем значения из useMemo
+  const { t21TH, s21TH, t21Count, s21Count, t21CostPerTH, s21CostPerTH, avgCostPerTH, avgEfficiency, totalPowerMW } = poolCalculations
   
   // Средневзвешенное энергопотребление 1 TH за 24 часа (кВт/день)
   const avgEnergyPerTH = (avgEfficiency * 1.1 * 24) / 1000
   
   // Цена токена H2C (единая для всех)
   const tokenPrice = avgCostPerTH * (1 + marginPercent / 100)
+  
+  // Добыча BTC за день (зависит от общей мощности пула)
+  const dailyBTCProduction = useMemo(() => {
+    return btcPerTHPerDay * totalPoolTH
+  }, [btcPerTHPerDay, totalPoolTH])
   
   // Затраты и доходы
   const companyCostPerKwh = (companyCostEE / usdtRate) * avgEnergyPerTH
@@ -577,8 +600,11 @@ function App() {
               </div>
               <div className="bg-white p-4 rounded-lg border-2 border-blue-200">
                 <div className="text-sm text-gray-600 mb-1">₿ Добыто сегодня</div>
-                <div className="text-2xl font-bold text-blue-700">{(btcPerTHPerDay * totalPoolTH).toFixed(6)}</div>
+                <div className="text-2xl font-bold text-blue-700">{dailyBTCProduction.toFixed(6)}</div>
                 <div className="text-xs text-gray-500">BTC/день</div>
+                <div className="text-xs text-gray-500 mt-1">
+                  = {btcPerTHPerDay.toFixed(8)} × {totalPoolTH.toLocaleString()}
+                </div>
               </div>
             </div>
             
