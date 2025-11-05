@@ -5,7 +5,6 @@ import './index.css'
 import App from './App.jsx'
 import LitecoinApp from './LitecoinApp.jsx'
 import MixedPool from './MixedPool.jsx'
-import DetailsPageWrapper from './DetailsPageWrapper.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -14,7 +13,6 @@ createRoot(document.getElementById('root')).render(
         <Route path="/" element={<App />} />
         <Route path="/litecoin" element={<LitecoinApp />} />
         <Route path="/mixed" element={<MixedPool />} />
-        <Route path="/details" element={<DetailsPageWrapper />} />
       </Routes>
     </BrowserRouter>
   </StrictMode>,

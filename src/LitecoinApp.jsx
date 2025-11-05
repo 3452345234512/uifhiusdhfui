@@ -184,12 +184,6 @@ function LitecoinApp() {
               >
                 ₿ Bitcoin Pool
               </Link>
-              <Link 
-                to="/details" 
-                className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-lg hover:bg-white/30 transition-colors"
-              >
-                📊 Детальный анализ
-              </Link>
             </div>
           </div>
         </div>
@@ -862,13 +856,6 @@ function LitecoinApp() {
         >
           <span className="text-2xl">🔀</span>
           <span>Mixed Pool</span>
-        </Link>
-        <Link 
-          to="/details" 
-          className="flex items-center gap-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-4 rounded-full font-bold shadow-2xl hover:from-green-600 hover:to-emerald-700 transition-all transform hover:scale-105"
-        >
-          <span className="text-2xl">📊</span>
-          <span>Детальный анализ</span>
         </Link>
       </div>
     </div>
