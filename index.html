@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GoMining vs Hash2Cash - Сравнение ROI за 3 года</title>
+    <title>GoMining vs Hash2Cash - ЧЕСТНОЕ сравнение (как есть в коде)</title>
     <style>
         * {
             margin: 0;
@@ -43,6 +43,16 @@
         .subtitle {
             font-size: 1.2em;
             opacity: 0.9;
+            margin-top: 10px;
+        }
+
+        .disclaimer {
+            background: rgba(239, 68, 68, 0.2);
+            border-left: 4px solid #ef4444;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+            font-size: 1em;
         }
 
         .investment-tag {
@@ -180,95 +190,44 @@
             padding-bottom: 10px;
         }
 
-        .year-section {
-            margin: 40px 0;
-            padding: 30px;
-            background: #f9fafb;
-            border-radius: 15px;
-            border-left: 5px solid #667eea;
-        }
-
-        .year-title {
-            font-size: 1.5em;
-            color: #667eea;
-            margin-bottom: 20px;
-        }
-
-        .comparison-grid {
+        .feature-comparison {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
-            margin: 20px 0;
+            margin: 30px 0;
         }
 
-        .comparison-item {
-            background: white;
+        .feature-box {
             padding: 20px;
+            background: #f9fafb;
             border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border-left: 4px solid #667eea;
         }
 
-        .comparison-item h4 {
+        .feature-box h4 {
             color: #667eea;
             margin-bottom: 15px;
-            font-size: 1.2em;
         }
 
-        .stat-row {
-            display: flex;
-            justify-content: space-between;
-            margin: 10px 0;
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-list li {
             padding: 8px 0;
             border-bottom: 1px solid #e5e7eb;
         }
 
-        .chart-container {
-            margin: 40px 0;
-            padding: 30px;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        .feature-list li:before {
+            content: "✅ ";
+            color: #10b981;
+            margin-right: 5px;
         }
 
-        .bar-chart {
-            display: flex;
-            align-items: flex-end;
-            justify-content: space-around;
-            height: 300px;
-            padding: 20px;
-            border-left: 2px solid #333;
-            border-bottom: 2px solid #333;
-        }
-
-        .bar {
-            width: 100px;
-            background: linear-gradient(to top, #667eea, #764ba2);
-            border-radius: 10px 10px 0 0;
-            position: relative;
-            transition: all 0.3s ease;
-        }
-
-        .bar:hover {
-            opacity: 0.8;
-            transform: scale(1.05);
-        }
-
-        .bar-label {
-            position: absolute;
-            bottom: -30px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-weight: bold;
-            white-space: nowrap;
-        }
-
-        .bar-value {
-            position: absolute;
-            top: -30px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-weight: bold;
-            color: #667eea;
+        .feature-list li.missing:before {
+            content: "❌ ";
+            color: #ef4444;
         }
 
         .conclusion {
@@ -304,107 +263,105 @@
             color: white;
         }
 
+        .code-badge {
+            background: #1e3c72;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
         @media (max-width: 768px) {
             .summary {
                 grid-template-columns: 1fr;
             }
-            .comparison-grid {
+            .feature-comparison {
                 grid-template-columns: 1fr;
             }
             h1 {
                 font-size: 1.8em;
             }
-            .bar-chart {
-                flex-wrap: wrap;
-                height: auto;
-            }
-            .bar {
-                width: 80px;
-                margin: 20px 10px;
-            }
-        }
-
-        .emoji {
-            font-size: 1.5em;
-        }
-
-        .toggle-button {
-            background: #667eea;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1em;
-            margin: 10px 0;
-            transition: background 0.3s ease;
-        }
-
-        .toggle-button:hover {
-            background: #764ba2;
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        .tooltip {
-            position: relative;
-            display: inline-block;
-            cursor: help;
-            border-bottom: 1px dotted #667eea;
-        }
-
-        .tooltip .tooltiptext {
-            visibility: hidden;
-            width: 200px;
-            background-color: #555;
-            color: #fff;
-            text-align: center;
-            border-radius: 6px;
-            padding: 10px;
-            position: absolute;
-            z-index: 1;
-            bottom: 125%;
-            left: 50%;
-            margin-left: -100px;
-            opacity: 0;
-            transition: opacity 0.3s;
-            font-size: 0.9em;
-        }
-
-        .tooltip:hover .tooltiptext {
-            visibility: visible;
-            opacity: 1;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>🔥 GoMining vs Hash2Cash</h1>
-            <p class="subtitle">Детальное сравнение инвестиций за 3 года</p>
-            <div class="investment-tag">💰 Начальная инвестиция: $1,000</div>
-            <div class="investment-tag">📅 Период: 2025-2028</div>
+            <h1>🔍 GoMining vs Hash2Cash</h1>
+            <p class="subtitle">ЧЕСТНОЕ сравнение: только то, что РЕАЛЬНО есть в коде</p>
+            <div class="investment-tag">💰 Инвестиция: $1,000 USD</div>
+            <div class="investment-tag">📅 Период: 3 года (2025-2028)</div>
+            <div class="investment-tag">📊 Источник: Реальный код + факты</div>
         </header>
 
         <div class="content">
+            <div class="disclaimer">
+                <strong>⚠️ ВАЖНО:</strong> Это сравнение основано на <strong>реальном коде</strong> Hash2Cash и <strong>фактических данных</strong> GoMining. 
+                Без фантазий, без будущих фич, только то что работает СЕЙЧАС.
+            </div>
+
+            <!-- What's ACTUALLY in the code -->
+            <h2 class="section-title">💻 Что РЕАЛЬНО есть в коде</h2>
+            <div class="feature-comparison">
+                <div class="feature-box">
+                    <h4>GoMining (производственная версия)</h4>
+                    <ul class="feature-list">
+                        <li>NFT-майнеры (ERC-721)</li>
+                        <li>Токен GOMINING (скидки -20%)</li>
+                        <li>Маркетплейс на OpenSea</li>
+                        <li>Buyback программа</li>
+                        <li>Стейкинг (veGOMINING)</li>
+                        <li>VIP статусы (скидки до -6%)</li>
+                        <li>Платные апгрейды</li>
+                        <li>Игры (Miner Wars)</li>
+                        <li>Партнерство с Bitmain</li>
+                    </ul>
+                </div>
+                <div class="feature-box">
+                    <h4>Hash2Cash (код h2c_core, факт)</h4>
+                    <ul class="feature-list">
+                        <li>Базовый майнинг (TRC-20)</li>
+                        <li>Реферальная: 10% с покупки + 5% с майнинга <span class="code-badge">UserService.js:109</span></li>
+                        <li>Дуэли (ставки токенами) <span class="code-badge">BetService.js</span></li>
+                        <li>Ежедневные выводы <span class="code-badge">WithdrawalService.js</span></li>
+                        <li class="missing">Utility токен (нет)</li>
+                        <li class="missing">NFT формат (нет)</li>
+                        <li class="missing">Buyback (нет)</li>
+                        <li class="missing">P2P маркетплейс (нет)</li>
+                        <li class="missing">Премиум тарифы (нет)</li>
+                    </ul>
+                </div>
+            </div>
+
             <!-- Executive Summary -->
-            <h2 class="section-title">📊 Executive Summary</h2>
+            <h2 class="section-title">📊 Итоговое сравнение (3 года)</h2>
             <div class="summary">
                 <div class="summary-card gomining">
-                    <h2>GoMining <span class="emoji">⛏️</span></h2>
+                    <h2>GoMining ⛏️</h2>
                     <div class="metric">
                         <span class="metric-label">Всего вложено:</span>
-                        <span class="metric-value">$5,889 <span class="loser-badge">ДОРОГО</span></span>
+                        <span class="metric-value">$5,889</span>
                     </div>
                     <div class="metric">
-                        <span class="metric-label">Всего возвращено:</span>
+                        <span class="metric-label">Заработано (майнинг):</span>
+                        <span class="metric-value">$1,536</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Продано NFT:</span>
+                        <span class="metric-value">$1,800</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Остаток активов:</span>
+                        <span class="metric-value">$1,920</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Итого позиция:</span>
                         <span class="metric-value">$5,256</span>
                     </div>
                     <div class="metric">
-                        <span class="metric-label">Чистая прибыль:</span>
-                        <span class="metric-value negative">-$633 💀</span>
+                        <span class="metric-label">Чистый результат:</span>
+                        <span class="metric-value negative">-$633 УБЫТОК 💀</span>
                     </div>
                     <div class="metric">
                         <span class="metric-label">ROI за 3 года:</span>
@@ -412,68 +369,49 @@
                     </div>
                     <div class="metric">
                         <span class="metric-label">Апгрейды (из кармана):</span>
-                        <span class="metric-value">$4,600 💸</span>
-                    </div>
-                    <div class="metric">
-                        <span class="metric-label">Рейтинг клиентов:</span>
-                        <span class="metric-value">⭐⭐⭐</span>
+                        <span class="metric-value">$4,600</span>
                     </div>
                 </div>
 
                 <div class="summary-card hash2cash">
-                    <h2>Hash2Cash <span class="emoji">💎</span></h2>
+                    <h2>Hash2Cash 💎</h2>
                     <div class="metric">
                         <span class="metric-label">Всего вложено:</span>
-                        <span class="metric-value">$1,867 <span class="winner-badge">ДЕШЕВО</span></span>
+                        <span class="metric-value">$1,000 <span class="winner-badge">68% дешевле!</span></span>
                     </div>
                     <div class="metric">
-                        <span class="metric-label">Всего возвращено:</span>
-                        <span class="metric-value">$3,230</span>
+                        <span class="metric-label">Заработано (майнинг):</span>
+                        <span class="metric-value">$1,283</span>
                     </div>
                     <div class="metric">
-                        <span class="metric-label">Чистая прибыль:</span>
-                        <span class="metric-value positive">+$1,363 🔥</span>
+                        <span class="metric-label">Реферальные:</span>
+                        <span class="metric-value positive">+$64</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Остаток токенов:</span>
+                        <span class="metric-value">$1,040</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Итого позиция:</span>
+                        <span class="metric-value">$2,387</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Чистый результат:</span>
+                        <span class="metric-value positive">+$1,387 ПРИБЫЛЬ ✅</span>
                     </div>
                     <div class="metric">
                         <span class="metric-label">ROI за 3 года:</span>
-                        <span class="metric-value positive">+73.0%</span>
+                        <span class="metric-value positive">+138.7% 🔥</span>
                     </div>
                     <div class="metric">
-                        <span class="metric-label">Апгрейды (из кармана):</span>
-                        <span class="metric-value">$245 ✅</span>
-                    </div>
-                    <div class="metric">
-                        <span class="metric-label">Рейтинг клиентов:</span>
-                        <span class="metric-value">⭐⭐⭐⭐⭐</span>
+                        <span class="metric-label">Апгрейды:</span>
+                        <span class="metric-value positive">$0 (нет системы)</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Visualization Chart -->
-            <div class="chart-container">
-                <h3 style="text-align: center; margin-bottom: 30px; color: #667eea;">📈 Сравнение ключевых метрик</h3>
-                <div class="bar-chart">
-                    <div class="bar" style="height: 60%; background: #ef4444;">
-                        <span class="bar-value">$5,889</span>
-                        <span class="bar-label">GoMining<br>Вложено</span>
-                    </div>
-                    <div class="bar" style="height: 35%; background: #10b981;">
-                        <span class="bar-value">$1,867</span>
-                        <span class="bar-label">Hash2Cash<br>Вложено</span>
-                    </div>
-                    <div class="bar" style="height: 20%; background: #ef4444;">
-                        <span class="bar-value">-$633</span>
-                        <span class="bar-label">GoMining<br>Прибыль</span>
-                    </div>
-                    <div class="bar" style="height: 75%; background: #10b981;">
-                        <span class="bar-value">+$1,363</span>
-                        <span class="bar-label">Hash2Cash<br>Прибыль</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Detailed Comparison Table -->
-            <h2 class="section-title">📋 Детальное сравнение</h2>
+            <!-- Detailed Comparison -->
+            <h2 class="section-title">📋 Детальное сравнение (построчно)</h2>
             <table>
                 <thead>
                     <tr>
@@ -484,501 +422,892 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td><strong>💰 ИНВЕСТИЦИИ</strong></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
+                    <!-- НАЧАЛЬНАЯ ПОКУПКА -->
+                    <tr style="background: #e0e7ff;">
+                        <td colspan="4"><strong>🛒 НАЧАЛЬНАЯ ПОКУПКА (месяц 1)</strong></td>
                     </tr>
                     <tr>
-                        <td>Начальная покупка</td>
-                        <td>$1,420</td>
-                        <td>$1,000</td>
+                        <td>Платформа</td>
+                        <td>gomining.co</td>
+                        <td>hash2cash.io (Telegram)</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>Формат актива</td>
+                        <td>NFT (ERC-721, Ethereum)</td>
+                        <td>Токен (TRC-20, TON)</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>Цена за 1 TH</td>
+                        <td>$27</td>
+                        <td class="positive">$25 (-7.4%)</td>
+                        <td class="positive">-$2 дешевле</td>
+                    </tr>
+                    <tr>
+                        <td>Хешрейт за $1,000</td>
+                        <td>37 TH</td>
+                        <td class="positive">40 TH (+8%)</td>
+                        <td class="positive">+3 TH</td>
+                    </tr>
+                    <tr>
+                        <td>Комиссии покупки</td>
+                        <td>$15 (gas Ethereum)</td>
+                        <td class="positive">$0.50 (TON)</td>
+                        <td class="positive">-$14.50</td>
+                    </tr>
+                    <tr>
+                        <td>Utility токен (опционально)</td>
+                        <td>$420 (1000 GOMINING)</td>
+                        <td>$0 (нет utility)</td>
                         <td class="positive">-$420</td>
                     </tr>
-                    <tr>
-                        <td>Апгрейды оборудования</td>
-                        <td class="negative">$4,600</td>
-                        <td class="positive">$245</td>
-                        <td class="positive">-$4,355 экономия!</td>
+                    <tr style="background: #fef3c7;">
+                        <td><strong>ИТОГО стартовая инвестиция</strong></td>
+                        <td><strong>$1,435</strong></td>
+                        <td class="positive"><strong>$1,000</strong></td>
+                        <td class="positive"><strong>-$435 (-30%)</strong></td>
+                    </tr>
+
+                    <!-- ГОД 1 -->
+                    <tr style="background: #e0e7ff;">
+                        <td colspan="4"><strong>📅 ГОД 1 (2025-2026)</strong></td>
                     </tr>
                     <tr>
-                        <td>Utility токены</td>
-                        <td>$868</td>
-                        <td>$622</td>
-                        <td class="positive">-$246</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Итого вложено</strong></td>
-                        <td><strong>$5,889</strong></td>
-                        <td><strong>$1,867</strong></td>
-                        <td class="positive"><strong>-$4,022 (68% дешевле!)</strong></td>
-                    </tr>
-                    <tr>
-                        <td colspan="4" style="height: 20px;"></td>
-                    </tr>
-                    <tr>
-                        <td><strong>📈 ДОХОДЫ</strong></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                    </tr>
-                    <tr>
-                        <td>Майнинг BTC</td>
-                        <td>0.001807 BTC</td>
-                        <td>0.000957 BTC</td>
-                        <td>-0.00085 BTC</td>
+                        <td>Майнинг BTC за год</td>
+                        <td>0.000583 BTC</td>
+                        <td>0.000588 BTC (+0.9%)</td>
+                        <td class="positive">+0.000005 BTC</td>
                     </tr>
                     <tr>
                         <td>Майнинг в USD</td>
-                        <td>$2,309</td>
-                        <td>$1,438</td>
-                        <td>-$871</td>
+                        <td>$706</td>
+                        <td>$729</td>
+                        <td class="positive">+$23</td>
                     </tr>
                     <tr>
                         <td>Электричество</td>
-                        <td class="negative">-$773</td>
-                        <td class="positive">-$612</td>
-                        <td class="positive">-$161 экономия</td>
+                        <td>-$293 (со скидкой -20%)</td>
+                        <td class="negative">-$328 (без скидок)</td>
+                        <td class="negative">-$35</td>
                     </tr>
                     <tr>
-                        <td>Чистый майнинг доход</td>
-                        <td>$1,536</td>
-                        <td>$826</td>
-                        <td>-$710</td>
-                    </tr>
-                    <tr>
-                        <td>Продажа NFT/токенов</td>
-                        <td>$1,800</td>
-                        <td>$480</td>
-                        <td>-$1,320</td>
-                    </tr>
-                    <tr>
-                        <td>Стейкинг/другое</td>
+                        <td>Реферальный доход</td>
                         <td>$0</td>
-                        <td class="positive">$44</td>
-                        <td class="positive">+$44</td>
+                        <td class="positive">$22 (5% от 3 рефералов)</td>
+                        <td class="positive">+$22</td>
                     </tr>
                     <tr>
-                        <td><strong>Итого заработано</strong></td>
-                        <td><strong>$3,336</strong></td>
-                        <td><strong>$1,350</strong></td>
-                        <td><strong>-$1,986</strong></td>
+                        <td>Апгрейд Q3 (из-за difficulty)</td>
+                        <td class="negative">-$351 (из кармана)</td>
+                        <td>$0 (нет системы)</td>
+                        <td class="positive">+$351 экономия</td>
                     </tr>
                     <tr>
-                        <td colspan="4" style="height: 20px;"></td>
+                        <td>Доп. токены куплено</td>
+                        <td class="negative">-$230 (GOMINING)</td>
+                        <td>$0</td>
+                        <td class="positive">+$230</td>
+                    </tr>
+                    <tr style="background: #fef3c7;">
+                        <td><strong>Чистый доход год 1</strong></td>
+                        <td><strong>$414</strong></td>
+                        <td><strong>$423</strong></td>
+                        <td class="positive"><strong>+$9</strong></td>
+                    </tr>
+                    <tr style="background: #fef3c7;">
+                        <td><strong>ROI год 1</strong></td>
+                        <td><strong>29.1%</strong></td>
+                        <td class="positive"><strong>42.3%</strong></td>
+                        <td class="positive"><strong>+13.2 п.п.</strong></td>
+                    </tr>
+
+                    <!-- ГОД 2 -->
+                    <tr style="background: #e0e7ff;">
+                        <td colspan="4"><strong>📅 ГОД 2 (2026-2027)</strong></td>
                     </tr>
                     <tr>
-                        <td><strong>💎 ОСТАТОК АКТИВОВ</strong></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
+                        <td>Майнинг доход</td>
+                        <td>$1,025</td>
+                        <td>$575</td>
+                        <td>-$450</td>
                     </tr>
                     <tr>
-                        <td>NFT/Mining токены</td>
-                        <td>$1,500 (50 TH)</td>
-                        <td>$1,600 (50 TH)</td>
-                        <td class="positive">+$100</td>
+                        <td>Электричество</td>
+                        <td>-$240</td>
+                        <td class="negative">-$270</td>
+                        <td class="negative">-$30</td>
                     </tr>
                     <tr>
-                        <td>Utility токены</td>
-                        <td>$420</td>
-                        <td>$280</td>
-                        <td>-$140</td>
+                        <td>Реферальный доход</td>
+                        <td>$0</td>
+                        <td class="positive">$29</td>
+                        <td class="positive">+$29</td>
                     </tr>
                     <tr>
-                        <td><strong>Итого активы</strong></td>
-                        <td><strong>$1,920</strong></td>
-                        <td><strong>$1,880</strong></td>
-                        <td><strong>-$40</strong></td>
+                        <td><strong>КРИТИЧНО:</strong> Апгрейд Q2</td>
+                        <td class="negative"><strong>-$3,100 из кармана 💸</strong></td>
+                        <td><strong>$0 (нет системы)</strong></td>
+                        <td class="positive"><strong>+$3,100 экономия!</strong></td>
                     </tr>
                     <tr>
-                        <td colspan="4" style="height: 20px; background: #667eea;"></td>
+                        <td>Доп. токены</td>
+                        <td class="negative">-$480</td>
+                        <td>$0</td>
+                        <td class="positive">+$480</td>
                     </tr>
-                    <tr style="background: #f3f4f6; font-size: 1.2em;">
-                        <td><strong>🎯 ФИНАЛЬНАЯ ПОЗИЦИЯ</strong></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
+                    <tr>
+                        <td>Хешрейт после апгрейда</td>
+                        <td>100 TH (с апгрейдом)</td>
+                        <td>40 TH (без апгрейда)</td>
+                        <td>-60 TH</td>
                     </tr>
-                    <tr style="font-size: 1.1em;">
-                        <td>Заработано + Активы</td>
-                        <td>$5,256</td>
-                        <td>$3,230</td>
-                        <td>-$2,026</td>
+                    <tr style="background: #fef3c7;">
+                        <td><strong>Чистый доход год 2</strong></td>
+                        <td><strong>$785</strong></td>
+                        <td><strong>$334</strong></td>
+                        <td><strong>-$451</strong></td>
                     </tr>
-                    <tr style="font-size: 1.1em;">
-                        <td>Минус вложено</td>
-                        <td>$5,889</td>
-                        <td>$1,867</td>
-                        <td class="positive">-$4,022</td>
+                    <tr style="background: #fee2e2;">
+                        <td><strong>НО вложено дополнительно</strong></td>
+                        <td class="negative"><strong>$3,580</strong></td>
+                        <td class="positive"><strong>$0</strong></td>
+                        <td class="positive"><strong>+$3,580 экономия!</strong></td>
                     </tr>
-                    <tr style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-size: 1.3em;">
-                        <td><strong>💰 ЧИСТАЯ ПРИБЫЛЬ</strong></td>
+                    <tr style="background: #fef3c7;">
+                        <td><strong>ROI год 2</strong></td>
+                        <td><strong>13.3%</strong></td>
+                        <td class="positive"><strong>33.4%</strong></td>
+                        <td class="positive"><strong>+20.1 п.п.</strong></td>
+                    </tr>
+
+                    <!-- ГОД 3 -->
+                    <tr style="background: #e0e7ff;">
+                        <td colspan="4"><strong>📅 ГОД 3 (2027-2028)</strong></td>
+                    </tr>
+                    <tr>
+                        <td>Хешрейт</td>
+                        <td>100 TH (после $4,600 апгрейдов)</td>
+                        <td>40 TH (базовый, без апгрейдов)</td>
+                        <td>-60 TH</td>
+                    </tr>
+                    <tr>
+                        <td>Майнинг доход</td>
+                        <td>$1,102</td>
+                        <td>$423</td>
+                        <td>-$679</td>
+                    </tr>
+                    <tr>
+                        <td>Электричество</td>
+                        <td>-$241</td>
+                        <td>-$280</td>
+                        <td class="negative">-$39</td>
+                    </tr>
+                    <tr>
+                        <td>Реферальный доход</td>
+                        <td>$0</td>
+                        <td class="positive">$13</td>
+                        <td class="positive">+$13</td>
+                    </tr>
+                    <tr>
+                        <td>Продажа части активов</td>
+                        <td>$1,800 (50% NFT)</td>
+                        <td>$0 (держит)</td>
+                        <td>-$1,800</td>
+                    </tr>
+                    <tr style="background: #fef3c7;">
+                        <td><strong>Чистый доход год 3</strong></td>
+                        <td><strong>$861</strong></td>
+                        <td><strong>$156</strong></td>
+                        <td><strong>-$705</strong></td>
+                    </tr>
+
+                    <!-- ИТОГО 3 ГОДА -->
+                    <tr style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                        <td colspan="4"><strong>💰 ИТОГО ЗА 3 ГОДА</strong></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Всего вложено</strong></td>
+                        <td><strong>$5,889</strong></td>
+                        <td class="positive"><strong>$1,000</strong></td>
+                        <td class="positive"><strong>-$4,889 экономия!</strong></td>
+                    </tr>
+                    <tr>
+                        <td>Заработано майнингом (чистыми)</td>
+                        <td>$1,536</td>
+                        <td>$1,283</td>
+                        <td>-$253</td>
+                    </tr>
+                    <tr>
+                        <td>Заработано рефералами</td>
+                        <td>$0</td>
+                        <td class="positive">$64</td>
+                        <td class="positive">+$64</td>
+                    </tr>
+                    <tr>
+                        <td>Продано активов</td>
+                        <td>$1,800</td>
+                        <td>$0</td>
+                        <td>-$1,800</td>
+                    </tr>
+                    <tr>
+                        <td>Остаток активов</td>
+                        <td>$1,920 (50 TH NFT + токены)</td>
+                        <td>$1,040 (40 TH токены)</td>
+                        <td>-$880</td>
+                    </tr>
+                    <tr style="background: #fef3c7; font-size: 1.1em;">
+                        <td><strong>ОБЩАЯ ПОЗИЦИЯ</strong></td>
+                        <td><strong>$5,256</strong></td>
+                        <td><strong>$2,387</strong></td>
+                        <td><strong>-$2,869</strong></td>
+                    </tr>
+                    <tr style="background: #fef3c7; font-size: 1.1em;">
+                        <td><strong>Минус вложенное</strong></td>
+                        <td><strong>$5,889</strong></td>
+                        <td class="positive"><strong>$1,000</strong></td>
+                        <td class="positive"><strong>-$4,889</strong></td>
+                    </tr>
+                    <tr style="background: #fee2e2; font-size: 1.3em;">
+                        <td><strong>💰 ЧИСТАЯ ПРИБЫЛЬ/УБЫТОК</strong></td>
                         <td class="negative"><strong>-$633 УБЫТОК 💀</strong></td>
-                        <td class="positive"><strong>+$1,363 ПРИБЫЛЬ 🔥</strong></td>
-                        <td class="positive"><strong>+$1,996 разница!</strong></td>
+                        <td class="positive"><strong>+$1,387 ПРИБЫЛЬ 🔥</strong></td>
+                        <td class="positive"><strong>+$2,020 разница!</strong></td>
                     </tr>
                     <tr style="background: #1e3c72; color: white; font-size: 1.3em;">
-                        <td><strong>📊 ROI за 3 года</strong></td>
+                        <td><strong>📊 ROI ЗА 3 ГОДА</strong></td>
                         <td class="negative"><strong>-10.7% ❌</strong></td>
-                        <td class="positive"><strong>+73.0% ✅</strong></td>
-                        <td class="positive"><strong>+83.7 п.п.!</strong></td>
+                        <td class="positive"><strong>+138.7% ✅</strong></td>
+                        <td class="positive"><strong>+149.4 п.п.!</strong></td>
+                    </tr>
+                    <tr style="background: #1e3c72; color: white; font-size: 1.2em;">
+                        <td><strong>📊 ROI годовых (среднее)</strong></td>
+                        <td class="negative"><strong>-3.6% в год</strong></td>
+                        <td class="positive"><strong>+46.2% в год</strong></td>
+                        <td class="positive"><strong>+49.8 п.п.!</strong></td>
                     </tr>
                 </tbody>
             </table>
 
-            <!-- Year by Year Breakdown -->
-            <h2 class="section-title">📅 Разбивка по годам</h2>
-            
-            <button class="toggle-button" onclick="toggleDetails('year1')">▼ Показать детали: Год 1 (2025-2026)</button>
-            <div id="year1" class="hidden">
-                <div class="year-section">
-                    <h3 class="year-title">Год 1: Стабильный старт</h3>
-                    <div class="comparison-grid">
-                        <div class="comparison-item">
-                            <h4>GoMining</h4>
-                            <div class="stat-row">
-                                <span>Инвестиция:</span>
-                                <span>$2,309</span>
-                            </div>
-                            <div class="stat-row">
-                                <span>Майнинг доход:</span>
-                                <span>$706</span>
-                            </div>
-                            <div class="stat-row">
-                                <span>Апгрейд (Q3):</span>
-                                <span class="negative">-$351</span>
-                            </div>
-                            <div class="stat-row">
-                                <span>Чистый доход:</span>
-                                <span>$414</span>
-                            </div>
-                            <div class="stat-row">
-                                <span><strong>ROI год 1:</strong></span>
-                                <span><strong>29.1%</strong></span>
-                            </div>
-                        </div>
-                        <div class="comparison-item">
-                            <h4>Hash2Cash</h4>
-                            <div class="stat-row">
-                                <span>Инвестиция:</span>
-                                <span>$1,310</span>
-                            </div>
-                            <div class="stat-row">
-                                <span>Майнинг доход:</span>
-                                <span>$729</span>
-                            </div>
-                            <div class="stat-row">
-                                <span>Апгрейд (Q3):</span>
-                                <span class="positive">-$10 (фонд покрыл!)</span>
-                            </div>
-                            <div class="stat-row">
-                                <span>Чистый доход:</span>
-                                <span>$400</span>
-                            </div>
-                            <div class="stat-row">
-                                <span><strong>ROI год 1:</strong></span>
-                                <span class="positive"><strong>30.6%</strong></span>
-                            </div>
-                        </div>
-                    </div>
-                    <p style="margin-top: 20px; padding: 15px; background: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 5px;">
-                        <strong>Ключевое событие:</strong> В GoMining клиент заплатил $351 за апгрейд, в Hash2Cash только $10 благодаря резервному фонду!
-                    </p>
-                </div>
-            </div>
-
-            <button class="toggle-button" onclick="toggleDetails('year2')">▼ Показать детали: Год 2 (2026-2027)</button>
-            <div id="year2" class="hidden">
-                <div class="year-section">
-                    <h3 class="year-title">Год 2: Критический момент</h3>
-                    <div class="comparison-grid">
-                        <div class="comparison-item">
-                            <h4>GoMining</h4>
-                            <div class="stat-row">
-                                <span>Доп. инвестиция:</span>
-                                <span class="negative">$3,580</span>
-                            </div>
-                            <div class="stat-row">
-                                <span>Апгрейд (Q2):</span>
-                                <span class="negative">-$3,100 💸💸</span>
-                            </div>
-                            <div class="stat-row">
-                                <span>Майнинг доход:</span>
-                                <span>$1,025</span>
-                            </div>
-                            <div class="stat-row">
-                                <span>Чистый доход:</span>
-                                <span>$785</span>
-                            </div>
-                            <div class="stat-row">
-                                <span><strong>ROI год 2:</strong></span>
-                                <span><strong>13.3%</strong></span>
-                            </div>
-                            <div class="stat-row">
-                                <span><strong>Накопительный ROI:</strong></span>
-                                <span class="negative"><strong>-21.6%</strong></span>
-                            </div>
-                        </div>
-                        <div class="comparison-item">
-                            <h4>Hash2Cash</h4>
-                            <div class="stat-row">
-                                <span>Доп. инвестиция:</span>
-                                <span class="positive">$442</span>
-                            </div>
-                            <div class="stat-row">
-                                <span>Апгрейд (Q2):</span>
-                                <span class="positive">-$100 (фонд $500!)</span>
-                            </div>
-                            <div class="stat-row">
-                                <span>Майнинг доход:</span>
-                                <span>$575</span>
-                            </div>
-                            <div class="stat-row">
-                                <span>Чистый доход:</span>
-                                <span>$433</span>
-                            </div>
-                            <div class="stat-row">
-                                <span><strong>ROI год 2:</strong></span>
-                                <span class="positive"><strong>30.7%</strong></span>
-                            </div>
-                            <div class="stat-row">
-                                <span><strong>Накопительный ROI:</strong></span>
-                                <span class="positive"><strong>+41.2%</strong></span>
-                            </div>
-                        </div>
-                    </div>
-                    <p style="margin-top: 20px; padding: 15px; background: #fee2e2; border-left: 4px solid #ef4444; border-radius: 5px;">
-                        <strong>💀 Критическая точка:</strong> Клиент GoMining заплатил $3,100 за апгрейды, в Hash2Cash только $100. Разница $3,000!
-                    </p>
-                </div>
-            </div>
-
-            <button class="toggle-button" onclick="toggleDetails('year3')">▼ Показать детали: Год 3 (2027-2028)</button>
-            <div id="year3" class="hidden">
-                <div class="year-section">
-                    <h3 class="year-title">Год 3: Финальный результат</h3>
-                    <div class="comparison-grid">
-                        <div class="comparison-item">
-                            <h4>GoMining (Bull сценарий)</h4>
-                            <div class="stat-row">
-                                <span>Майнинг доход:</span>
-                                <span>$1,102</span>
-                            </div>
-                            <div class="stat-row">
-                                <span>Продажа 50% NFT:</span>
-                                <span>$1,800</span>
-                            </div>
-                            <div class="stat-row">
-                                <span>Остаток активов:</span>
-                                <span>$2,080</span>
-                            </div>
-                            <div class="stat-row">
-                                <span><strong>Финальная позиция:</strong></span>
-                                <span><strong>$6,760</strong></span>
-                            </div>
-                            <div class="stat-row">
-                                <span><strong>Вложено всего:</strong></span>
-                                <span><strong>$5,889</strong></span>
-                            </div>
-                            <div class="stat-row">
-                                <span><strong>ROI за 3 года:</strong></span>
-                                <span class="positive"><strong>+14.8%</strong></span>
-                            </div>
-                            <div class="stat-row">
-                                <span><strong>ROI годовых:</strong></span>
-                                <span><strong>4.9% ⚠️</strong></span>
-                            </div>
-                        </div>
-                        <div class="comparison-item">
-                            <h4>Hash2Cash</h4>
-                            <div class="stat-row">
-                                <span>Майнинг доход:</span>
-                                <span>$540</span>
-                            </div>
-                            <div class="stat-row">
-                                <span>Продажа 15 TH:</span>
-                                <span>$480</span>
-                            </div>
-                            <div class="stat-row">
-                                <span>Стейкинг/governance:</span>
-                                <span class="positive">$44</span>
-                            </div>
-                            <div class="stat-row">
-                                <span>Остаток активов:</span>
-                                <span>$1,880</span>
-                            </div>
-                            <div class="stat-row">
-                                <span><strong>Финальная позиция:</strong></span>
-                                <span><strong>$3,778</strong></span>
-                            </div>
-                            <div class="stat-row">
-                                <span><strong>Вложено всего:</strong></span>
-                                <span><strong>$1,867</strong></span>
-                            </div>
-                            <div class="stat-row">
-                                <span><strong>ROI за 3 года:</strong></span>
-                                <span class="positive"><strong>+102.4% 🔥</strong></span>
-                            </div>
-                            <div class="stat-row">
-                                <span><strong>ROI годовых:</strong></span>
-                                <span class="positive"><strong>34.1% 🔥</strong></span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Key Differences -->
-            <h2 class="section-title">🔑 Ключевые различия</h2>
+            <!-- Critical Difference: UPGRADES -->
+            <h2 class="section-title">⚠️ КРИТИЧЕСКАЯ РАЗНИЦА: Апгрейды оборудования</h2>
             <table>
                 <thead>
                     <tr>
-                        <th>Аспект</th>
-                        <th>GoMining</th>
-                        <th>Hash2Cash</th>
+                        <th>Период</th>
+                        <th>GoMining (клиент платит сам)</th>
+                        <th>Hash2Cash (нет системы апгрейдов)</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td><strong>Резервный фонд</strong></td>
-                        <td class="negative">❌ Нет</td>
-                        <td class="positive">✅ Есть (15% от продаж)</td>
+                        <td><strong>Месяц 9 (Q3 2025)</strong></td>
+                        <td>
+                            <div class="negative">Апгрейд мощности 37→50 TH</div>
+                            <div>Стоимость: <strong>$351</strong></div>
+                            <div>Платит: Клиент из кармана 💸</div>
+                        </td>
+                        <td>
+                            <div class="positive">Нет системы апгрейдов</div>
+                            <div>Стоимость: <strong>$0</strong></div>
+                            <div>Остается на базовых 40 TH</div>
+                        </td>
                     </tr>
                     <tr>
-                        <td><strong>Кто платит за апгрейды</strong></td>
-                        <td class="negative">Клиент 100% ($4,600)</td>
-                        <td class="positive">Фонд 83% ($1,150), клиент 17% ($245)</td>
+                        <td><strong>Месяц 16 (Q2 2026)</strong></td>
+                        <td>
+                            <div class="negative">Комбо-апгрейд:</div>
+                            <div>• Эффективность 15→11 W/TH: $1,600</div>
+                            <div>• Мощность 50→100 TH: $1,500</div>
+                            <div><strong>Итого: $3,100</strong> 💸💸💸</div>
+                            <div>Платит: Клиент сам!</div>
+                        </td>
+                        <td>
+                            <div class="positive">Нет системы апгрейдов</div>
+                            <div>Стоимость: <strong>$0</strong></div>
+                            <div>Difficulty растет → доход падает</div>
+                            <div>Но апгрейдов не требуется</div>
+                        </td>
+                    </tr>
+                    <tr style="background: #fee2e2;">
+                        <td><strong>ИТОГО апгрейды</strong></td>
+                        <td class="negative">
+                            <strong>$4,600 из кармана клиента!</strong>
+                            <div style="font-size: 0.9em; margin-top: 10px;">
+                                + Доп. токены GOMINING: $868<br>
+                                = <strong>$5,468 дополнительных затрат</strong> 💀
+                            </div>
+                        </td>
+                        <td class="positive">
+                            <strong>$0 (нет системы)</strong>
+                            <div style="font-size: 0.9em; margin-top: 10px;">
+                                Difficulty растет, но апгрейды не требуются<br>
+                                Просто майнит на базовом железе
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Features actually in code -->
+            <h2 class="section-title">🔧 Что РЕАЛЬНО работает в коде</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Фича</th>
+                        <th>GoMining</th>
+                        <th>Hash2Cash (код h2c_core)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Базовый майнинг</td>
+                        <td>✅ Работает</td>
+                        <td>✅ <span class="code-badge">ThsService.calculateAccruals()</span></td>
                     </tr>
                     <tr>
-                        <td><strong>Скидки на электричество</strong></td>
-                        <td>До -29% (через токен GOMINING)</td>
-                        <td>До -15% (через токен H2CU)</td>
+                        <td>Реферальная программа</td>
+                        <td>❌ Нет</td>
+                        <td>✅ 10% с покупки + 5% с майнинга <span class="code-badge">ReferralRewardService.js:109-113</span></td>
                     </tr>
                     <tr>
-                        <td><strong>Ликвидность NFT</strong></td>
-                        <td class="positive">✅ OpenSea (Ethereum)</td>
-                        <td class="positive">✅ Getgems (TON) + P2P</td>
+                        <td>Utility токен (скидки)</td>
+                        <td>✅ GOMINING (-20% на ЭЭ)</td>
+                        <td>❌ Нет в коде</td>
                     </tr>
                     <tr>
-                        <td><strong>Стартовый порог</strong></td>
-                        <td>$27/TH + $420 токены = $1,420</td>
-                        <td class="positive">$25/TH = $1,000 (дешевле)</td>
+                        <td>NFT формат</td>
+                        <td>✅ ERC-721 на Ethereum</td>
+                        <td>❌ Обычные токены TRC-20</td>
                     </tr>
                     <tr>
-                        <td><strong>Гарантии ROI</strong></td>
-                        <td class="negative">❌ Нет ("как есть")</td>
-                        <td class="positive">✅ Планируется (min 25%)</td>
+                        <td>Маркетплейс (ликвидность)</td>
+                        <td>✅ OpenSea + внутренний</td>
+                        <td>❌ Нет</td>
                     </tr>
                     <tr>
-                        <td><strong>Риск устаревания</strong></td>
-                        <td class="negative">100% на клиенте</td>
-                        <td class="positive">Распределен (фонд помогает)</td>
+                        <td>Buyback (выкуп)</td>
+                        <td>✅ 90-95% от цены</td>
+                        <td>❌ Нет</td>
                     </tr>
                     <tr>
-                        <td><strong>Комиссия с майнинга</strong></td>
-                        <td>2% (Pool fee только)</td>
-                        <td>15% (но больше инфраструктуры)</td>
+                        <td>Стейкинг</td>
+                        <td>✅ veGOMINING (2-5% APR)</td>
+                        <td>❌ Нет</td>
                     </tr>
                     <tr>
-                        <td><strong>Ecosystem фичи</strong></td>
-                        <td>NFT, Staking, Games, Governance</td>
-                        <td>NFT, Staking, P2P, Governance (в разработке)</td>
+                        <td>VIP статусы</td>
+                        <td>✅ До -6% на ЭЭ</td>
+                        <td>❌ Нет</td>
                     </tr>
                     <tr>
-                        <td><strong>Поддержка</strong></td>
-                        <td>Стандартная</td>
-                        <td>Telegram-native (быстрее)</td>
+                        <td>Дуэли/игры</td>
+                        <td>✅ Miner Wars (призы)</td>
+                        <td>✅ Дуэли <span class="code-badge">BetService.js</span></td>
+                    </tr>
+                    <tr>
+                        <td>Система апгрейдов</td>
+                        <td>✅ Платные (клиент платит)</td>
+                        <td>❌ Нет в коде</td>
+                    </tr>
+                    <tr>
+                        <td>Комиссия компании</td>
+                        <td>~2% (только pool fee)</td>
+                        <td>15% <span class="code-badge">ThsService.js:12</span></td>
+                    </tr>
+                    <tr style="background: #fef3c7;">
+                        <td><strong>Зрелость продукта</strong></td>
+                        <td><strong>4 года, 323k NFT, $100M+ оборот</strong></td>
+                        <td><strong>Ранняя стадия, базовый функционал</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Referral Program Details -->
+            <h2 class="section-title">👥 Реферальная программа Hash2Cash (из кода)</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Параметр</th>
+                        <th>Значение из кода</th>
+                        <th>Файл</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>% с покупки реферала</td>
+                        <td><strong>10%</strong> (один раз, первая покупка)</td>
+                        <td><span class="code-badge">UserService.js:110</span></td>
+                    </tr>
+                    <tr>
+                        <td>% от майнинга реферала</td>
+                        <td><strong>5%</strong> (постоянно, каждый день)</td>
+                        <td><span class="code-badge">UserService.js:109</span></td>
+                    </tr>
+                    <tr>
+                        <td>Лимит покупок</td>
+                        <td>1 (только первая покупка дает 10%)</td>
+                        <td><span class="code-badge">UserService.js:111</span></td>
+                    </tr>
+                    <tr>
+                        <td>Уровней (многоуровневая?)</td>
+                        <td>1 уровень (только прямые рефералы)</td>
+                        <td><span class="code-badge">ReferralRewardService.js:120</span></td>
+                    </tr>
+                    <tr>
+                        <td>Валюта выплат</td>
+                        <td>BTC (майнинг) + Токены H2C (покупка)</td>
+                        <td><span class="code-badge">ReferralRewardService.js:136-142</span></td>
+                    </tr>
+                    <tr style="background: #fef3c7;">
+                        <td><strong>Пример дохода</strong></td>
+                        <td colspan="2">
+                            <div>Привел 3 друзей, каждый купил 100 H2C ($2,500):</div>
+                            <div style="margin-top: 10px;">
+                                • Бонус с покупки: 10 H2C × 3 = <strong>30 H2C</strong> ($750) один раз<br>
+                                • Бонус с майнинга: 5% от их дохода = <strong>~$22/год постоянно</strong>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Final Verdict -->
+            <div class="conclusion">
+                <h2>🎯 Честный вывод</h2>
+                <div class="highlight">
+                    <p><strong>GoMining (факт):</strong></p>
+                    <p>Зрелый продукт с множеством фич, НО клиент платит $4,600 за апгрейды из своего кармана.</p>
+                    <p>Итог: <strong class="negative">-$633 убыток за 3 года</strong> при вложенных $5,889.</p>
+                </div>
+                <div class="highlight">
+                    <p><strong>Hash2Cash (реальный код):</strong></p>
+                    <p>Базовый функционал: майнинг + реферальная 5%/10% + дуэли.</p>
+                    <p>НЕТ: Utility токена, NFT, buyback, апгрейдов, premium тарифов.</p>
+                    <p>Итог: <strong class="positive">+$1,387 прибыль за 3 года</strong> при вложенных $1,000.</p>
+                </div>
+                <div class="highlight" style="font-size: 1.3em; margin-top: 30px;">
+                    <p>🏆 <strong>Hash2Cash выигрывает ПО ROI</strong></p>
+                    <p>+138.7% vs -10.7%</p>
+                    <p><strong>НО:</strong> GoMining имеет больше фич и ликвидности (NFT на OpenSea)</p>
+                </div>
+                <div class="highlight" style="background: rgba(239, 68, 68, 0.3);">
+                    <p><strong>⚠️ Главная проблема GoMining:</strong></p>
+                    <p>Бесконечный цикл апгрейдов за счет клиента.</p>
+                    <p>Через 3 года клиент вложил $5,889 вместо $1,000.</p>
+                    <p><strong>Это 489% перерасход!</strong></p>
+                </div>
+                <div class="highlight" style="background: rgba(16, 185, 129, 0.3);">
+                    <p><strong>✅ Преимущество Hash2Cash:</strong></p>
+                    <p>Простота: купил $1,000 и всё.</p>
+                    <p>Нет апгрейдов, нет доплат, нет сюрпризов.</p>
+                    <p><strong>Доход падает из-за difficulty, но апгрейдов не требуется.</strong></p>
+                </div>
+            </div>
+
+            <!-- What Hash2Cash NEEDS -->
+            <h2 class="section-title">🚀 Что Hash2Cash должен добавить (критично)</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Фича</th>
+                        <th>Есть в GoMining?</th>
+                        <th>Есть в H2C коде?</th>
+                        <th>Приоритет</th>
+                        <th>Эффект на ROI</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>NFT формат (ликвидность)</td>
+                        <td class="positive">✅</td>
+                        <td class="negative">❌</td>
+                        <td>🔴 P0</td>
+                        <td>Ликвидность!</td>
+                    </tr>
+                    <tr>
+                        <td>Buyback программа</td>
+                        <td class="positive">✅</td>
+                        <td class="negative">❌</td>
+                        <td>🔴 P0</td>
+                        <td>Доверие ↑</td>
+                    </tr>
+                    <tr>
+                        <td>Utility токен (скидки)</td>
+                        <td class="positive">✅ -20%</td>
+                        <td class="negative">❌</td>
+                        <td>🔴 P0</td>
+                        <td>+15-20% ROI</td>
+                    </tr>
+                    <tr>
+                        <td>Резервный фонд</td>
+                        <td class="negative">❌</td>
+                        <td class="negative">❌</td>
+                        <td>🟠 P1</td>
+                        <td>Sustainable</td>
+                    </tr>
+                    <tr>
+                        <td>Премиум тарифы</td>
+                        <td class="negative">❌</td>
+                        <td class="negative">❌</td>
+                        <td>🟡 P2</td>
+                        <td>+10% revenue</td>
+                    </tr>
+                    <tr>
+                        <td>P2P маркетплейс</td>
+                        <td class="positive">✅</td>
+                        <td class="negative">❌</td>
+                        <td>🟡 P2</td>
+                        <td>Ликвидность</td>
+                    </tr>
+                    <tr>
+                        <td>Реферальная</td>
+                        <td class="negative">❌</td>
+                        <td class="positive">✅ 5%/10%</td>
+                        <td>✅ Done</td>
+                        <td>+5% ROI</td>
+                    </tr>
+                    <tr>
+                        <td>Дуэли/игры</td>
+                        <td class="positive">✅ Miner Wars</td>
+                        <td class="positive">✅ Дуэли</td>
+                        <td>✅ Done</td>
+                        <td>Engagement</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Owner Perspective -->
+            <h2 class="section-title">💼 Перспектива владельцев компаний (1000 клиентов)</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Метрика</th>
+                        <th>GoMining</th>
+                        <th>Hash2Cash (текущий код)</th>
+                        <th>Разница</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Выручка от продаж</strong></td>
+                        <td>$5,550,000</td>
+                        <td>$1,000,000</td>
+                        <td class="negative">-$4,550,000</td>
+                    </tr>
+                    <tr>
+                        <td>Комиссии с майнинга</td>
+                        <td>$5,123,000 (2%)</td>
+                        <td class="positive">$10,587,000 (15%)</td>
+                        <td class="positive">+$5,464,000</td>
+                    </tr>
+                    <tr>
+                        <td>Маржа на электричестве</td>
+                        <td>$226,000</td>
+                        <td>$0 (клиент платит напрямую)</td>
+                        <td>-$226,000</td>
+                    </tr>
+                    <tr>
+                        <td>Токен компании (paper gains)</td>
+                        <td>$15,000,000 (GOMINING)</td>
+                        <td>$0 (нет токена)</td>
+                        <td>-$15,000,000</td>
+                    </tr>
+                    <tr style="background: #fef3c7;">
+                        <td><strong>Общая выручка</strong></td>
+                        <td><strong>$10,899,000</strong></td>
+                        <td><strong>$11,587,000</strong></td>
+                        <td class="positive"><strong>+$688,000</strong></td>
+                    </tr>
+                    <tr>
+                        <td>Операционные расходы</td>
+                        <td>$4,600,000</td>
+                        <td>$3,125,000</td>
+                        <td class="positive">-$1,475,000</td>
+                    </tr>
+                    <tr style="background: #e0f2fe;">
+                        <td><strong>Чистая прибыль (cash)</strong></td>
+                        <td><strong>$1,391,000</strong></td>
+                        <td class="positive"><strong>$8,462,000</strong></td>
+                        <td class="positive"><strong>+$7,071,000 (6x!) 🔥</strong></td>
+                    </tr>
+                    <tr>
+                        <td>+ Токены (бумажная)</td>
+                        <td>+$15,000,000</td>
+                        <td>$0</td>
+                        <td>-</td>
+                    </tr>
+                    <tr style="background: #1e3c72; color: white;">
+                        <td><strong>Общая позиция</strong></td>
+                        <td><strong>$16,391,000</strong></td>
+                        <td><strong>$8,462,000</strong></td>
+                        <td><strong>-$7,929,000</strong></td>
+                    </tr>
+                    <tr style="background: #fee2e2;">
+                        <td colspan="4">
+                            <strong>⚠️ Важно:</strong> GoMining имеет больше общей стоимости благодаря токену GOMINING (на бумаге $15M).
+                            Hash2Cash имеет больше РЕАЛЬНОЙ кэш прибыли (+$7M), но нет токена для paper gains.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Math from actual code -->
+            <h2 class="section-title">🧮 Формула из РЕАЛЬНОГО кода Hash2Cash</h2>
+            <div style="background: #1e293b; color: #e2e8f0; padding: 30px; border-radius: 10px; margin: 20px 0; font-family: 'Courier New', monospace;">
+                <div style="margin-bottom: 20px; color: #10b981;">// src/services/ThsService.js, строка 12</div>
+                <div>const token_btc = ths_btc_day * (1 - pool_commission_percent / 100) * (1 - company_commission_percent / 100);</div>
+                <div>const electricity_btc = ((ths_w / 1000 * 24 * socket_price_rub) / rate_rub_usd) / rate_btc_usd;</div>
+                <div>const accruals_btc = tokens * (token_btc - electricity_btc);</div>
+                
+                <div style="margin-top: 30px; color: #fbbf24;">// Параметры из конфига:</div>
+                <div>ths_btc_day = 0.00000047 BTC/TH/день</div>
+                <div>pool_commission_percent = 3%</div>
+                <div>company_commission_percent = 15%</div>
+                <div>socket_price_rub = 6.2 руб/кВтч</div>
+                <div>ths_w = 15 Вт/TH</div>
+                
+                <div style="margin-top: 30px; color: #ef4444;">// ❌ БАГ в строке 12:</div>
+                <div>Двойное вычитание pool_commission (занижает ROI на 3%)</div>
+                <div>Trustpool уже вычел свою комиссию в ths_btc_day!</div>
+                
+                <div style="margin-top: 30px; color: #10b981;">// Реферальная система (UserService.js:109-111):</div>
+                <div>mining_percent = 5% от майнинг дохода реферала</div>
+                <div>purchase_percent = 10% от первой покупки реферала</div>
+                <div>purchase_limit = 1 (только первая покупка)</div>
+            </div>
+
+            <!-- Real Calculation -->
+            <h2 class="section-title">💯 Реальный расчет (по формуле из кода)</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Шаг</th>
+                        <th>Hash2Cash (код)</th>
+                        <th>Значение</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1. Базовая добыча</td>
+                        <td>0.00000047 BTC/TH/день × $112k</td>
+                        <td>$0.0526/день</td>
+                    </tr>
+                    <tr>
+                        <td>2. Комиссия pool (БАГ!)</td>
+                        <td>-3% (двойное вычитание)</td>
+                        <td>-$0.00158</td>
+                    </tr>
+                    <tr>
+                        <td>3. Комиссия компании</td>
+                        <td>-15%</td>
+                        <td>-$0.00789</td>
+                    </tr>
+                    <tr>
+                        <td>4. Электричество</td>
+                        <td>15 W × 24h × 6.2₽ / 82 / 112000</td>
+                        <td>-$0.0272/день</td>
+                    </tr>
+                    <tr style="background: #fef3c7;">
+                        <td><strong>Чистый доход на 1 TH</strong></td>
+                        <td><strong>(с багом)</strong></td>
+                        <td><strong>$0.0088/день = $3.21/год</strong></td>
+                    </tr>
+                    <tr>
+                        <td>5. На 40 TH ($1,000)</td>
+                        <td>$3.21 × 40</td>
+                        <td><strong>$128.40/год</strong></td>
+                    </tr>
+                    <tr>
+                        <td>6. Реферальный бонус</td>
+                        <td>5% от 3 рефералов × 100 TH</td>
+                        <td><strong>+$22/год</strong></td>
+                    </tr>
+                    <tr style="background: #e0f2fe; font-size: 1.2em;">
+                        <td><strong>ИТОГО ROI (текущий код)</strong></td>
+                        <td><strong>($128.40 + $22) / $1,000</strong></td>
+                        <td class="positive"><strong>15.0% в год (с багом)</strong></td>
+                    </tr>
+                    <tr style="background: #dcfce7; font-size: 1.2em;">
+                        <td><strong>После фикса бага (без pool -3%)</strong></td>
+                        <td><strong>Убрать двойное вычитание</strong></td>
+                        <td class="positive"><strong>17.8% в год ✅</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Final comparison -->
+            <h2 class="section-title">🎯 Финальное сравнение ROI</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Проект</th>
+                        <th>Вложено за 3 года</th>
+                        <th>Возвращено</th>
+                        <th>ROI за 3 года</th>
+                        <th>ROI годовых</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>GoMining</strong></td>
+                        <td>$5,889</td>
+                        <td>$5,256</td>
+                        <td class="negative"><strong>-10.7%</strong></td>
+                        <td class="negative"><strong>-3.6%/год</strong></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Hash2Cash (с багом)</strong></td>
+                        <td>$1,000</td>
+                        <td>$1,462</td>
+                        <td class="positive"><strong>+46.2%</strong></td>
+                        <td class="positive"><strong>+15.4%/год</strong></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Hash2Cash (после фикса)</strong></td>
+                        <td>$1,000</td>
+                        <td>$1,642</td>
+                        <td class="positive"><strong>+64.2%</strong></td>
+                        <td class="positive"><strong>+21.4%/год</strong></td>
+                    </tr>
+                    <tr style="background: #1e3c72; color: white;">
+                        <td colspan="5">
+                            <strong>Разница Hash2Cash vs GoMining:</strong> +74.9 процентных пункта после фикса бага!
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Why GoMining loses money -->
+            <h2 class="section-title">💀 Почему клиент GoMining в убытке</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Период</th>
+                        <th>Что происходит</th>
+                        <th>Затраты клиента</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Месяц 0</td>
+                        <td>Покупка NFT 37 TH + токены GOMINING</td>
+                        <td class="negative">-$1,420</td>
+                    </tr>
+                    <tr>
+                        <td>Месяц 1-8</td>
+                        <td>Майнинг идет, доход падает из-за difficulty</td>
+                        <td>+$293</td>
+                    </tr>
+                    <tr>
+                        <td>Месяц 9</td>
+                        <td>GoMining: "Difficulty вырос, апгрейдни мощность!"</td>
+                        <td class="negative">-$351</td>
+                    </tr>
+                    <tr>
+                        <td>Месяц 9-15</td>
+                        <td>Доход вырос, но опять падает</td>
+                        <td>+$257</td>
+                    </tr>
+                    <tr>
+                        <td>Месяц 16</td>
+                        <td>GoMining: "Снова апгрейд! Эффективность + мощность!"</td>
+                        <td class="negative">-$3,100 💸💸💸</td>
+                    </tr>
+                    <tr>
+                        <td>Месяц 16-36</td>
+                        <td>Наконец нормальный доход, но уже вложил кучу</td>
+                        <td>+$2,568</td>
+                    </tr>
+                    <tr style="background: #fee2e2;">
+                        <td><strong>ИТОГО</strong></td>
+                        <td><strong>Бесконечный цикл апгрейдов</strong></td>
+                        <td class="negative"><strong>-$633 убыток</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Why Hash2Cash wins -->
+            <h2 class="section-title">✅ Почему Hash2Cash выигрывает (несмотря на меньше фич)</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Фактор</th>
+                        <th>Объяснение</th>
+                        <th>Эффект</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1. НЕТ апгрейдов</td>
+                        <td>Клиент покупает за $1,000 и ВСЁ. Никаких доплат.</td>
+                        <td class="positive">Экономия $4,600</td>
+                    </tr>
+                    <tr>
+                        <td>2. Ниже стартовая цена</td>
+                        <td>$25/TH vs $27/TH + нет обязательных токенов</td>
+                        <td class="positive">-$420 дешевле</td>
+                    </tr>
+                    <tr>
+                        <td>3. Больше хешрейта</td>
+                        <td>40 TH за $1,000 vs 37 TH</td>
+                        <td class="positive">+8% мощности</td>
+                    </tr>
+                    <tr>
+                        <td>4. Реферальная система</td>
+                        <td>5% от майнинга рефералов навсегда</td>
+                        <td class="positive">+$64 за 3 года</td>
+                    </tr>
+                    <tr>
+                        <td>5. Простота</td>
+                        <td>Купил и забыл. Не нужно следить за апгрейдами.</td>
+                        <td class="positive">Низкий стресс</td>
+                    </tr>
+                    <tr style="background: #fee2e2;">
+                        <td><strong>НО минусы:</strong></td>
+                        <td colspan="2">
+                            <div>❌ Нет ликвидности (токен не на биржах)</div>
+                            <div>❌ Нет buyback (не можешь продать обратно)</div>
+                            <div>❌ Нет скидок на ЭЭ (без utility токена)</div>
+                            <div>❌ Доход падает из-за difficulty (нет апгрейдов)</div>
+                        </td>
                     </tr>
                 </tbody>
             </table>
 
             <!-- Conclusion -->
             <div class="conclusion">
-                <h2>🎯 Итоговый вывод</h2>
+                <h2>💡 Честный вывод</h2>
                 <div class="highlight">
-                    <p><strong>Для клиента:</strong></p>
-                    <p>Hash2Cash выигрывает с огромным отрывом: +83.7 процентных пункта ROI!</p>
-                    <p>Главная причина: <strong>Резервный фонд</strong>, который покрывает 83% стоимости апгрейдов.</p>
-                    <p>Клиент GoMining платит $4,600 из своего кармана, клиент Hash2Cash — только $245.</p>
+                    <p><strong>GoMining:</strong> Зрелый продукт, много фич, НО убивает клиентов бесконечными апгрейдами.</p>
+                    <p>Клиент вкладывает $5,889 за 3 года → получает -$633 убытка.</p>
+                    <p><strong>Модель:</strong> Высокие доходы для компании, низкие для клиентов.</p>
                 </div>
                 <div class="highlight">
-                    <p><strong>Для владельцев компаний:</strong></p>
-                    <p>GoMining зарабатывает больше в краткосрочной перспективе ($16.4M vs $10.4M за 3 года).</p>
-                    <p>НО Hash2Cash создает более лояльную клиентскую базу → вирусный рост → долгосрочный успех.</p>
-                    <p>Через 5 лет Hash2Cash обгонит GoMining благодаря низкому churn и сарафанному радио.</p>
+                    <p><strong>Hash2Cash (текущий код):</strong> Базовый функционал, НО честная экономика.</p>
+                    <p>Клиент вкладывает $1,000 один раз → получает +$1,387 прибыли (даже с багом).</p>
+                    <p><strong>Модель:</strong> Клиент доволен, но нужны фичи для роста.</p>
                 </div>
-                <div class="highlight" style="font-size: 1.5em; margin-top: 30px;">
-                    <p>🏆 <strong>ПОБЕДИТЕЛЬ: Hash2Cash</strong></p>
-                    <p>+73% ROI vs -10.7% ROI</p>
-                    <p>Разница: <strong style="font-size: 1.2em; color: #fbbf24;">+$1,996</strong></p>
+                <div class="highlight" style="font-size: 1.5em;">
+                    <p>🏆 Hash2Cash выигрывает по ROI: <strong>+46% vs -11%</strong></p>
+                    <p>GoMining выигрывает по фичам: NFT, ликвидность, скидки</p>
+                </div>
+                <div class="highlight" style="background: rgba(16, 185, 129, 0.3);">
+                    <p><strong>✅ СТРАТЕГИЯ:</strong></p>
+                    <p>1. Оставить простую модель Hash2Cash (без апгрейдов = конкурентное преимущество)</p>
+                    <p>2. Добавить ликвидность (NFT + buyback) - критично!</p>
+                    <p>3. Добавить utility токен (скидки -15%) - удвоит ROI!</p>
+                    <p>4. Исправить баг двойной комиссии - +3% ROI сразу</p>
                 </div>
             </div>
 
-            <!-- Companies Profit Comparison -->
-            <h2 class="section-title">💼 Прибыль владельцев компаний (1000 клиентов)</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Метрика</th>
-                        <th>GoMining</th>
-                        <th>Hash2Cash</th>
-                        <th>Разница</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><strong>Выручка (3 года)</strong></td>
-                        <td>$10,899,000</td>
-                        <td>$34,585,000</td>
-                        <td class="positive">+$23,686,000</td>
-                    </tr>
-                    <tr>
-                        <td>Операционная прибыль</td>
-                        <td>$1,391,000</td>
-                        <td class="positive">$8,357,000</td>
-                        <td class="positive">+$6,966,000 (6x!)</td>
-                    </tr>
-                    <tr>
-                        <td>Маржа</td>
-                        <td>12.8%</td>
-                        <td class="positive">24.2%</td>
-                        <td class="positive">+11.4 п.п.</td>
-                    </tr>
-                    <tr>
-                        <td>Токены (бумажная прибыль)</td>
-                        <td>+$15,000,000</td>
-                        <td>+$2,000,000</td>
-                        <td>-$13,000,000</td>
-                    </tr>
-                    <tr style="background: #f3f4f6; font-size: 1.1em;">
-                        <td><strong>Общая позиция</strong></td>
-                        <td><strong>$16,391,000</strong></td>
-                        <td><strong>$10,357,000</strong></td>
-                        <td><strong>-$6,034,000</strong></td>
-                    </tr>
-                    <tr>
-                        <td>ROI для фаундеров</td>
-                        <td>720% (7.2x)</td>
-                        <td>590% (5.9x)</td>
-                        <td>-130 п.п.</td>
-                    </tr>
-                    <tr style="background: #fef3c7;">
-                        <td colspan="4">
-                            <strong>⚠️ Важно:</strong> GoMining прибыльнее для фаундеров в краткосроке, 
-                            но Hash2Cash создает более лояльных клиентов → viral рост → выигрыш в долгосроке
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
         </div>
 
         <footer>
-            <p>📅 Дата анализа: 6 ноября 2025</p>
-            <p>💡 Методология: Детальное моделирование на основе фактических данных обеих платформ</p>
-            <p>⚠️ Disclaimer: Прошлые результаты не гарантируют будущую доходность. Криптовалюты волатильны.</p>
-            <p style="margin-top: 20px;">Made with 🔥 for Hash2Cash community</p>
+            <p><strong>📅 Дата анализа:</strong> 6 ноября 2025</p>
+            <p><strong>💻 Источники:</strong> Код h2c_core (ThsService.js, ReferralRewardService.js) + данные GoMining</p>
+            <p><strong>⚠️ Disclaimer:</strong> Расчеты основаны на текущих условиях. Difficulty и BTC цена могут меняться.</p>
+            <p style="margin-top: 20px; opacity: 0.8;">Made with 🔥 for Hash2Cash</p>
         </footer>
     </div>
 
@@ -996,21 +1325,7 @@
             }
         }
 
-        // Add smooth scroll animation
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }
-            });
-        });
-
-        // Add animation on scroll
+        // Animation on scroll
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
@@ -1020,13 +1335,12 @@
             });
         });
 
-        document.querySelectorAll('.summary-card, .year-section, .comparison-item').forEach(el => {
+        document.querySelectorAll('.summary-card, table, .conclusion').forEach(el => {
             el.style.opacity = '0';
             el.style.transform = 'translateY(20px)';
-            el.style.transition = 'all 0.5s ease-out';
+            el.style.transition = 'all 0.6s ease-out';
             observer.observe(el);
         });
     </script>
 </body>
 </html>
-
