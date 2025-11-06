@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="ru">
-<head>
+  <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
@@ -73,8 +73,8 @@
             border-radius: 5px;
         }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
         <header>
             <h1>📊 РЕАЛЬНОЕ сравнение: GoMining vs Hash2Cash</h1>
@@ -146,45 +146,46 @@ const networkDifficulty = 146.72  // T (текущая сложность)
                         <td>Электричество (6.2₽/кВтч)</td>
                         <td>-$1.01</td>
                         <td>-$1.01</td>
-                        <td class="negative">-$1.01 (больше чем доход!)</td>
+                        <td>-$1.01</td>
                     </tr>
                     <tr>
                         <td>Чистый доход за день</td>
                         <td class="positive">$0.92</td>
                         <td>$0.01</td>
-                        <td class="negative">-$0.47 УБЫТОК 💀</td>
+                        <td class="negative">$0.00 (доход < ЭЭ = выплата $0)</td>
                     </tr>
                     <tr>
                         <td>Чистый доход за год</td>
                         <td class="positive">$336</td>
                         <td>$4</td>
-                        <td class="negative">-$172 УБЫТОК</td>
+                        <td class="negative">$0 (нулевые выплаты)</td>
                     </tr>
                     <tr>
                         <td>Реферальный доход (5%, 3 друга)</td>
                         <td>+$22</td>
                         <td>+$12</td>
-                        <td>+$6</td>
+                        <td>+$6 (рефералы еще майнят)</td>
                     </tr>
                     <tr style="background: #fef3c7;">
                         <td><strong>ИТОГО за год</strong></td>
                         <td class="positive"><strong>$358</strong></td>
                         <td><strong>$16</strong></td>
-                        <td class="negative"><strong>-$166</strong></td>
+                        <td><strong>$6</strong></td>
                     </tr>
                     <tr style="background: #dcfce7;">
                         <td><strong>ROI за год</strong></td>
                         <td class="positive"><strong>35.8%</strong></td>
                         <td><strong>1.6%</strong></td>
-                        <td class="negative"><strong>-16.6%</strong></td>
+                        <td><strong>0.6%</strong></td>
                     </tr>
                 </tbody>
             </table>
 
             <div class="highlight">
                 <p><strong>💡 КРИТИЧНО:</strong></p>
-                <p>При росте difficulty 47.28%/год, к году 3 Hash2Cash становится УБЫТОЧНЫМ!</p>
-                <p>Электричество $1.01/день > доход $0.54/день = -$0.47 убытка каждый день!</p>
+                <p>При росте difficulty 47.28%/год, к году 3 Hash2Cash дает <strong>$0 выплат!</strong></p>
+                <p>Электричество $1.01/день > доход $0.54/день = всё уходит на ЭЭ, клиенту ничего не остается.</p>
+                <p><strong>Это НЕ убыток</strong> (клиент не доплачивает), просто нулевой период майнинга.</p>
             </div>
 
             <!-- 3 Year Summary -->
@@ -216,12 +217,12 @@ const networkDifficulty = 146.72  // T (текущая сложность)
                     </tr>
                     <tr>
                         <td>Доход год 3</td>
-                        <td class="negative">-$166 УБЫТОК</td>
-                        <td>$861 (с апгрейдами)</td>
+                        <td class="negative">$6 (почти ноль, только рефералы)</td>
+                        <td>$861 (с апгрейдами за $4,600)</td>
                     </tr>
                     <tr style="background: #fef3c7;">
                         <td><strong>Итого заработано за 3 года</strong></td>
-                        <td><strong>$208</strong></td>
+                        <td><strong>$380</strong></td>
                         <td><strong>$2,060</strong></td>
                     </tr>
                     <tr>
@@ -231,12 +232,12 @@ const networkDifficulty = 146.72  // T (текущая сложность)
                     </tr>
                     <tr>
                         <td>Остаток активов</td>
-                        <td>$0 (токены ничего не стоят при убытке)</td>
+                        <td>$800 (40 TH, но низкий спрос)</td>
                         <td>$1,920 (100 TH NFT)</td>
                     </tr>
                     <tr style="background: #e0f2fe;">
                         <td><strong>Общая позиция</strong></td>
-                        <td><strong>$208</strong></td>
+                        <td><strong>$1,180</strong></td>
                         <td><strong>$3,980</strong></td>
                     </tr>
                     <tr style="background: #fee2e2; font-size: 1.2em;">
@@ -246,12 +247,12 @@ const networkDifficulty = 146.72  // T (текущая сложность)
                     </tr>
                     <tr style="background: #1e3c72; color: white; font-size: 1.3em;">
                         <td><strong>ЧИСТАЯ ПРИБЫЛЬ/УБЫТОК</strong></td>
-                        <td class="negative"><strong>-$792 УБЫТОК 💀</strong></td>
-                        <td class="negative"><strong>-$1,909 УБЫТОК 💀</strong></td>
+                        <td class="positive"><strong>+$180 (+18%) ✅</strong></td>
+                        <td class="negative"><strong>-$1,909 (-32.4%) 💀</strong></td>
                     </tr>
                     <tr style="background: #1e3c72; color: white; font-size: 1.3em;">
                         <td><strong>ROI за 3 года</strong></td>
-                        <td class="negative"><strong>-79.2% ❌</strong></td>
+                        <td class="positive"><strong>+18.0% ✅</strong></td>
                         <td class="negative"><strong>-32.4% ❌</strong></td>
                     </tr>
                 </tbody>
@@ -500,30 +501,38 @@ const networkDifficulty = 146.72  // T (текущая сложность)
                         <strong>При росте difficulty 47.28% в год:</strong>
                     </p>
                     <ul style="margin-left: 20px; margin-top: 10px; font-size: 1.1em;">
-                        <li>Любой облачный майнинг БЕЗ апгрейдов = СМЕРТЬ через 2-3 года</li>
-                        <li>GoMining выживает, но КЛИЕНТ платит $4,600 за апгрейды</li>
-                        <li>Hash2Cash без апгрейдов = просто медленно умирает</li>
+                        <li>Год 1-2: Hash2Cash прибыльный ($358 + $16 = $374)</li>
+                        <li>Год 3: Майнинг дает $0 (всё уходит на ЭЭ), только рефералы $6</li>
+                        <li>Клиент НЕ доплачивает - просто нулевой период</li>
                     </ul>
                 </div>
 
                 <div style="background: rgba(255,255,255,0.2); padding: 20px; border-radius: 10px; margin: 20px 0;">
-                    <p style="font-size: 1.3em;"><strong>Единственное спасение:</strong></p>
-                    <p style="font-size: 1.2em; margin-top: 10px;">
-                        BTC должен расти БЫСТРЕЕ difficulty! 
-                    </p>
-                    <p style="margin-top: 10px;">
-                        Если BTC +50%/год > difficulty 47.28% = прибыль!<br>
-                        Если BTC меньше = убыток!
-                    </p>
+                    <p style="font-size: 1.3em;"><strong>GoMining vs Hash2Cash:</strong></p>
+                    <ul style="margin-left: 20px; margin-top: 10px; font-size: 1.1em;">
+                        <li>Hash2Cash: Вложил $1,000 → вернул $1,180 → прибыль +$180 (+18%) ✅</li>
+                        <li>GoMining: Вложил $5,889 → вернул $3,980 → убыток -$1,909 (-32%) ❌</li>
+                        <li><strong>Разница:</strong> Hash2Cash выигрывает на +50.4 процентных пункта!</li>
+                    </ul>
                 </div>
 
                 <div style="background: rgba(16, 185, 129, 0.3); padding: 20px; border-radius: 10px; margin: 20px 0;">
-                    <p style="font-size: 1.3em;"><strong>✅ Что НУЖНО Hash2Cash:</strong></p>
+                    <p style="font-size: 1.3em;"><strong>✅ Почему Hash2Cash выигрывает:</strong></p>
                     <ul style="margin-left: 20px; margin-top: 10px; font-size: 1.1em;">
-                        <li>Резервный фонд для апгрейдов (как я предлагал)</li>
-                        <li>Или снизить ЭЭ до 4.0₽ (вместо 6.2₽)</li>
-                        <li>Или utility токен со скидками -15%</li>
-                        <li>Или просто ЖДАТЬ роста BTC >47%/год</li>
+                        <li>Вложил в 6 раз меньше ($1k vs $5.9k)</li>
+                        <li>Не платит за апгрейды ($0 vs $4,600)</li>
+                        <li>Год 3 с нулевым доходом = не критично (уже окупил $380)</li>
+                        <li>Итог: +18% прибыли vs -32% убытка GoMining</li>
+                    </ul>
+                </div>
+
+                <div style="background: rgba(239, 68, 68, 0.3); padding: 20px; border-radius: 10px; margin: 20px 0;">
+                    <p style="font-size: 1.3em;"><strong>⚠️ Что НУЖНО Hash2Cash для улучшения:</strong></p>
+                    <ul style="margin-left: 20px; margin-top: 10px; font-size: 1.1em;">
+                        <li>Снизить ЭЭ с 6.2₽ до 4.0₽ → год 3 станет прибыльным</li>
+                        <li>Utility токен со скидками -15% → продлит прибыльность</li>
+                        <li>NFT + листинг → ликвидность (можно продать до года 3)</li>
+                        <li>Buyback программа → доверие клиентов</li>
                     </ul>
                 </div>
             </div>
@@ -571,6 +580,6 @@ const difficultyGrowth = 47.28  <span style="color: #10b981;">// % в год (с
             <p style="margin-top: 20px; opacity: 0.8;">Честный расчет без фантазий 🎯</p>
         </footer>
     </div>
-</body>
+  </body>
 </html>
 
