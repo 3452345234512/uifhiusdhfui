@@ -1,0 +1,6 @@
+User-agent: *
+Disallow: /
+
+# Скрыть все страницы от поисковых систем
+# Google, Yandex, Bing, и других
+

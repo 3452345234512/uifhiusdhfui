@@ -3,6 +3,10 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="googlebot" content="noindex, nofollow">
+    <meta name="bingbot" content="noindex, nofollow">
+    <meta name="yandex" content="noindex, nofollow">
     <title>GoMining vs Hash2Cash - ЧЕСТНОЕ сравнение (как есть в коде)</title>
     <style>
         * {
@@ -1568,35 +1572,292 @@
                     </p>
                 </div>
 
-                <h3 style="color: #ef4444; margin: 30px 0 20px 0;">🔍 Кошельки основателей GoMining</h3>
+                <h3 style="color: #ef4444; margin: 30px 0 20px 0;">🐋 Топ-холдеры токена GOMINING (Киты)</h3>
                 
                 <div style="background: #fee2e2; padding: 25px; margin: 15px 0; border-left: 4px solid #ef4444; border-radius: 10px;">
-                    <h4 style="color: #ef4444; margin-bottom: 15px;">❌ Информация НЕ публична</h4>
-                    <p style="margin: 10px 0;">
-                        Адреса кошельков основателей и команды GoMining <strong>не раскрываются публично</strong>.
-                        Это стандартная практика в криптовалютной индустрии для безопасности.
-                    </p>
-                    <p style="margin: 10px 0;">
-                        <strong>Что известно:</strong>
-                    </p>
-                    <ul style="margin-left: 20px; margin-top: 10px;">
-                        <li>⚠️ Команда получает 5% от еженедельной эмиссии (12,750 токенов/неделю = 663k токенов/год)</li>
-                        <li>⚠️ Предположительно ~40-80M токенов в holdings команды (10-20% от supply)</li>
-                        <li>⚠️ Информация о вестинге не раскрыта в whitepaper</li>
-                        <li>⚠️ Нет публичных адресов для проверки</li>
-                    </ul>
+                    <h4 style="color: #ef4444; margin-bottom: 15px;">🚨 КРИТИЧНО: Высокая концентрация!</h4>
                     
-                    <div style="background: white; padding: 15px; margin: 20px 0; border-radius: 5px;">
-                        <p style="color: #ef4444;"><strong>🚨 RED FLAG:</strong></p>
-                        <p style="margin: 10px 0;">
-                            Отсутствие прозрачности по кошелькам команды = потенциальный риск.
-                            Невозможно проверить:
-                        </p>
-                        <ul style="margin-left: 20px;">
-                            <li>Продают ли основатели токены</li>
-                            <li>Сколько токенов у команды реально</li>
-                            <li>Есть ли вестинг (блокировка)</li>
+                    <table style="margin: 20px 0;">
+                        <thead style="background: #ef4444;">
+                            <tr>
+                                <th style="color: white;">Параметр</th>
+                                <th style="color: white;">Значение</th>
+                                <th style="color: white;">Источник</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style="background: #fee2e2;">
+                                <td><strong>Топ-10 адресов владеют</strong></td>
+                                <td class="negative" style="font-size: 1.3em;"><strong>68.72% supply!</strong></td>
+                                <td>CoinLore</td>
+                            </tr>
+                            <tr>
+                                <td>Общее предложение</td>
+                                <td>410,840,000 токенов</td>
+                                <td>CoinMarketCap</td>
+                            </tr>
+                            <tr>
+                                <td>У топ-10 кошельков</td>
+                                <td><strong>~282,300,000 токенов</strong></td>
+                                <td>Расчет (68.72%)</td>
+                            </tr>
+                            <tr>
+                                <td>Стоимость токенов топ-10</td>
+                                <td class="negative"><strong>~$115,200,000</strong></td>
+                                <td>По цене $0.408</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div style="background: white; padding: 20px; margin: 20px 0; border-radius: 5px;">
+                        <p style="color: #ef4444; font-size: 1.2em; margin-bottom: 15px;"><strong>🚨 ЧТО ЭТО ЗНАЧИТ:</strong></p>
+                        <ul style="margin-left: 20px; line-height: 1.8;">
+                            <li><strong>68.72% в руках 10 адресов</strong> = ОЧЕНЬ высокая концентрация</li>
+                            <li>Топ-10 могут контролировать цену токена</li>
+                            <li>Риск дампа: если продадут 10% = $11.5M на рынок = обвал цены</li>
+                            <li>Неизвестно: биржи это или команда/инвесторы</li>
                         </ul>
+                    </div>
+
+                    <p style="margin: 15px 0;">
+                        🔗 <strong>Проверить:</strong> 
+                        <a href="https://www.coinlore.com/coin/gomining-token" target="_blank" style="color: #667eea;">
+                            CoinLore - GOMINING Rich List
+                        </a>
+                    </p>
+                </div>
+
+                <h3 style="color: #667eea; margin: 30px 0 20px 0;">🔍 Как найти топ-кошельки самостоятельно</h3>
+                
+                <div style="background: white; padding: 25px; margin: 15px 0; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                    <h4 style="color: #667eea; margin-bottom: 15px;">Пошаговая инструкция:</h4>
+                    
+                    <div style="background: #f3f4f6; padding: 20px; margin: 15px 0; border-radius: 8px;">
+                        <p style="font-weight: bold; margin-bottom: 10px;">ШАГ 1: Найти адрес контракта GOMINING</p>
+                        <ol style="margin-left: 20px; line-height: 1.8;">
+                            <li>Открыть <a href="https://www.coingecko.com/en/coins/gomining-token" target="_blank" style="color: #667eea;">CoinGecko GOMINING</a></li>
+                            <li>Прокрутить до раздела "Info" или "Contract"</li>
+                            <li>Найти "Contract Address" (начинается с 0x...)</li>
+                            <li>Скопировать адрес</li>
+                        </ol>
+                        <p style="margin-top: 10px; padding: 10px; background: #e0f2fe; border-radius: 5px;">
+                            <strong>Пример:</strong> 0x1234...abcd (реальный адрес будет другой)
+                        </p>
+                    </div>
+
+                    <div style="background: #f3f4f6; padding: 20px; margin: 15px 0; border-radius: 8px;">
+                        <p style="font-weight: bold; margin-bottom: 10px;">ШАГ 2: Открыть в блокчейн эксплорере</p>
+                        <ol style="margin-left: 20px; line-height: 1.8;">
+                            <li>Если Ethereum → <a href="https://etherscan.io" target="_blank" style="color: #667eea;">Etherscan.io</a></li>
+                            <li>Если Polygon → <a href="https://polygonscan.com" target="_blank" style="color: #667eea;">PolygonScan.com</a></li>
+                            <li>Если BNB Chain → <a href="https://bscscan.com" target="_blank" style="color: #667eea;">BscScan.com</a></li>
+                            <li>Вставить адрес контракта в поиск</li>
+                        </ol>
+                    </div>
+
+                    <div style="background: #f3f4f6; padding: 20px; margin: 15px 0; border-radius: 8px;">
+                        <p style="font-weight: bold; margin-bottom: 10px;">ШАГ 3: Посмотреть топ-холдеров</p>
+                        <ol style="margin-left: 20px; line-height: 1.8;">
+                            <li>На странице контракта найти вкладку <strong>"Holders"</strong></li>
+                            <li>Увидишь топ-100 адресов с наибольшими балансами</li>
+                            <li>Для каждого показано:
+                                <ul style="margin-left: 20px; margin-top: 5px;">
+                                    <li>Адрес кошелька (0x...)</li>
+                                    <li>Баланс (количество токенов)</li>
+                                    <li>% от общего supply</li>
+                                </ul>
+                            </li>
+                        </ol>
+                    </div>
+
+                    <div style="background: #f3f4f6; padding: 20px; margin: 15px 0; border-radius: 8px;">
+                        <p style="font-weight: bold; margin-bottom: 10px;">ШАГ 4: Анализ транзакций крупных кошельков</p>
+                        <ol style="margin-left: 20px; line-height: 1.8;">
+                            <li>Кликнуть на адрес интересного кошелька</li>
+                            <li>Открыть вкладку <strong>"Token Transfers"</strong></li>
+                            <li>Отфильтровать по дате (Last 2 years)</li>
+                            <li>Искать:
+                                <ul style="margin-left: 20px; margin-top: 5px;">
+                                    <li style="color: #ef4444;">🔴 OUT транзакции на биржи (Gate.io, MEXC) = ПРОДАЖА</li>
+                                    <li style="color: #10b981;">🟢 IN транзакции = ПОКУПКА</li>
+                                    <li style="color: #f59e0b;">🟡 Transfers между кошельками = ПЕРЕМЕЩЕНИЕ</li>
+                                </ul>
+                            </li>
+                        </ol>
+                    </div>
+
+                    <div style="background: #fee2e2; padding: 20px; margin: 20px 0; border-left: 4px solid #ef4444; border-radius: 5px;">
+                        <p style="font-weight: bold; color: #ef4444; margin-bottom: 10px;">⚠️ На что обратить внимание:</p>
+                        <table style="margin-top: 10px; box-shadow: none;">
+                            <tbody>
+                                <tr>
+                                    <td style="border: none; padding: 10px;">🚨 RED FLAGS:</td>
+                                    <td style="border: none; padding: 10px;">
+                                        • Регулярные продажи миллионов токенов<br>
+                                        • Кошельки с >10% supply без пометки "Exchange"<br>
+                                        • Свежие кошельки с огромными балансами<br>
+                                        • Частые переводы на миксеры (Tornado Cash и т.д.)
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="border: none; padding: 10px;">✅ GREEN FLAGS:</td>
+                                    <td style="border: none; padding: 10px;">
+                                        • Кошельки бирж (Gate.io, MEXC) с метками<br>
+                                        • Стейкинг контракты (заблокированные токены)<br>
+                                        • Старые кошельки без крупных продаж<br>
+                                        • Распределение между многими адресами
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div style="background: #dcfce7; padding: 20px; margin: 20px 0; border-left: 4px solid #10b981; border-radius: 5px;">
+                        <p style="font-weight: bold; margin-bottom: 10px;">💡 Альтернативный способ (проще):</p>
+                        <p style="margin: 10px 0;">
+                            Используй готовые сервисы для анализа холдеров:
+                        </p>
+                        <ul style="margin-left: 20px; margin-top: 10px;">
+                            <li>📊 <a href="https://www.coinlore.com/coin/gomining-token" target="_blank" style="color: #667eea;">
+                                <strong>CoinLore - GOMINING Rich List</strong>
+                            </a> (показывает топ-10 сразу)</li>
+                            <li>📈 <a href="https://etherscan.io/token/tokenholderchart" target="_blank" style="color: #667eea;">
+                                <strong>Etherscan Token Holder Chart</strong>
+                            </a> (визуализация)</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h3 style="color: #ef4444; margin: 30px 0 20px 0;">📊 Концентрация токенов GOMINING (ФАКТ)</h3>
+                
+                <div style="background: white; padding: 25px; margin: 15px 0; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                    <table style="margin: 15px 0;">
+                        <thead style="background: #ef4444;">
+                            <tr>
+                                <th style="color: white;">Группа холдеров</th>
+                                <th style="color: white;">% от supply</th>
+                                <th style="color: white;">Токенов</th>
+                                <th style="color: white;">Стоимость ($0.408)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style="background: #fee2e2;">
+                                <td><strong>Топ-10 адресов</strong></td>
+                                <td class="negative"><strong>68.72%</strong></td>
+                                <td><strong>282,300,000</strong></td>
+                                <td class="negative"><strong>$115,200,000</strong></td>
+                            </tr>
+                            <tr>
+                                <td>Из них биржи (примерно)</td>
+                                <td>~40-50%</td>
+                                <td>~164-205M</td>
+                                <td>$67-84M</td>
+                            </tr>
+                            <tr>
+                                <td>Стейкинг контракты</td>
+                                <td>~10-15%</td>
+                                <td>~41-62M</td>
+                                <td>$17-25M</td>
+                            </tr>
+                            <tr style="background: #fef3c7;">
+                                <td><strong>Неизвестные киты/команда?</strong></td>
+                                <td class="negative"><strong>~13-18%</strong></td>
+                                <td><strong>~53-74M токенов</strong></td>
+                                <td class="negative"><strong>$22-30M</strong></td>
+                            </tr>
+                            <tr>
+                                <td colspan="4" style="padding-top: 15px;"></td>
+                            </tr>
+                            <tr>
+                                <td>Остальные держатели (62k адресов)</td>
+                                <td class="positive">31.28%</td>
+                                <td>128,540,000</td>
+                                <td>$52,400,000</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div style="background: #fee2e2; padding: 20px; margin: 20px 0; border-radius: 5px;">
+                        <p style="color: #ef4444; font-weight: bold; font-size: 1.2em; margin-bottom: 10px;">
+                            🚨 РИСК: 68.72% концентрация = ОПАСНО!
+                        </p>
+                        <p style="margin: 10px 0;">
+                            Если топ-10 начнут продавать:
+                        </p>
+                        <ul style="margin-left: 20px; margin-top: 10px;">
+                            <li>Даже 5% от их holdings = $5.76M на рынок</li>
+                            <li>При объеме $9.7M/день = 60% дневного объема!</li>
+                            <li>Цена упадет на 20-40% минимум</li>
+                            <li>Паника → каскадные продажи → обвал 💀</li>
+                        </ul>
+                    </div>
+
+                    <div style="background: #dcfce7; padding: 20px; margin: 20px 0; border-radius: 5px;">
+                        <p style="font-weight: bold; margin-bottom: 10px;">✅ Для сравнения - здоровое распределение:</p>
+                        <ul style="margin-left: 20px;">
+                            <li>Топ-10 владеют: <strong>20-35%</strong> (нормально)</li>
+                            <li>GOMINING: <strong class="negative">68.72%</strong> (опасно)</li>
+                            <li>Разница: <strong>2x концентрация!</strong></li>
+                        </ul>
+                    </div>
+
+                    <p style="margin: 20px 0;">
+                        🔗 <strong>Источник данных:</strong> 
+                        <a href="https://www.coinlore.com/coin/gomining-token" target="_blank" style="color: #667eea;">
+                            CoinLore - Rich List GOMINING
+                        </a>
+                    </p>
+                </div>
+
+                <h3 style="color: #667eea; margin: 30px 0 20px 0;">🔎 Проверка продаж за последние 2 года</h3>
+                
+                <div style="background: white; padding: 25px; margin: 15px 0; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                    <p style="margin: 10px 0;">
+                        <strong>К сожалению:</strong> Адреса конкретных кошельков команды GoMining НЕ публикуются.
+                    </p>
+                    <p style="margin: 10px 0;">
+                        <strong>Но можно проверить:</strong>
+                    </p>
+                    <ol style="margin-left: 20px; margin-top: 10px; line-height: 1.8;">
+                        <li>Зайти на блокчейн эксплорер (Etherscan/Polygonscan)</li>
+                        <li>Найти контракт GOMINING</li>
+                        <li>Вкладка "Holders" → топ-10 адресов</li>
+                        <li>Кликнуть на каждый адрес</li>
+                        <li>Вкладка "Token Transfers (ERC-20)" → фильтр "Last 2 years"</li>
+                        <li>Анализировать:
+                            <ul style="margin-left: 20px; margin-top: 5px;">
+                                <li>Частые OUT на Gate.io = продажи</li>
+                                <li>Крупные суммы (>1M токенов) = киты</li>
+                                <li>Регулярность (каждую неделю) = возможно команда дампит</li>
+                            </ul>
+                        </li>
+                    </ol>
+
+                    <div style="background: #fef3c7; padding: 15px; margin: 20px 0; border-radius: 5px;">
+                        <p style="font-weight: bold; margin-bottom: 10px;">💡 На что смотреть в транзакциях:</p>
+                        <table style="margin-top: 10px; box-shadow: none;">
+                            <tbody>
+                                <tr>
+                                    <td style="border: none; padding: 5px;"><strong>FROM</strong></td>
+                                    <td style="border: none; padding: 5px;">Кто отправил</td>
+                                </tr>
+                                <tr>
+                                    <td style="border: none; padding: 5px;"><strong>TO</strong></td>
+                                    <td style="border: none; padding: 5px;">Кто получил</td>
+                                </tr>
+                                <tr>
+                                    <td style="border: none; padding: 5px;"><strong>Value</strong></td>
+                                    <td style="border: none; padding: 5px;">Сколько токенов</td>
+                                </tr>
+                                <tr>
+                                    <td style="border: none; padding: 5px;"><strong>Age</strong></td>
+                                    <td style="border: none; padding: 5px;">Когда</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p style="margin-top: 10px;">
+                            Если видишь <strong>OUT на Gate.io каждую неделю по 500k-1M токенов</strong> = кто-то дампит регулярно!
+                        </p>
                     </div>
                 </div>
 
