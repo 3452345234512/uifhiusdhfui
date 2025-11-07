@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Калькулятор сравнения: GoMining vs Hash2Cash</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        h1 { font-size: 2.5em; margin-bottom: 10px; }
+        .controls {
+            padding: 30px;
+            background: #f9fafb;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        .control-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .control-item {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .control-item label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #667eea;
+        }
+        .control-item input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1.1em;
+            transition: border-color 0.3s;
+        }
+        .control-item input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .control-item .help {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+        }
+        .results {
+            padding: 40px;
+        }
+        .comparison-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 30px 0;
+        }
+        .card {
+            padding: 30px;
+            border-radius: 15px;
+            color: white;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .card.gomining {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        .card.hash2cash {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        .card h2 {
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 12px 0;
+            padding: 10px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 8px;
+        }
+        .metric-label { font-weight: 600; }
+        .metric-value { font-size: 1.2em; font-weight: bold; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 30px 0;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        th { padding: 15px; text-align: left; }
+        td { padding: 12px 15px; border-bottom: 1px solid #e5e7eb; }
+        tbody tr:nth-child(even) { background: #f3f4f6; }
+        .positive { color: #10b981; font-weight: bold; }
+        .negative { color: #ef4444; font-weight: bold; }
+        .section-title {
+            font-size: 1.8em;
+            margin: 40px 0 20px 0;
+            color: #1e3c72;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+        .update-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 10px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 20px;
+        }
+        .update-btn:hover {
+            background: #764ba2;
+            transform: scale(1.05);
+        }
+        @media (max-width: 768px) {
+            .comparison-cards { grid-template-columns: 1fr; }
+            .control-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🧮 Калькулятор сравнения</h1>
+            <p style="font-size: 1.2em; margin-top: 10px;">GoMining vs Hash2Cash - Введи свои данные</p>
+        </header>
+
+        <div class="controls">
+            <h3 style="color: #667eea; margin-bottom: 20px;">⚙️ Параметры для расчета</h3>
+            <div class="control-grid">
+                <div class="control-item">
+                    <label>💰 Инвестиция (USD)</label>
+                    <input type="number" id="investment" value="1000" min="100" step="100">
+                    <div class="help">Сколько вы вкладываете</div>
+                </div>
+                
+                <div class="control-item">
+                    <label>⛏️ Доход BTC за 1 TH/день</label>
+                    <input type="number" id="btc_per_th" value="0.00000043" step="0.00000001">
+                    <div class="help">Из API или калькулятора</div>
+                </div>
+                
+                <div class="control-item">
+                    <label>₿ Цена BTC (USD)</label>
+                    <input type="number" id="btc_price" value="112000" step="1000">
+                    <div class="help">Текущий курс Bitcoin</div>
+                </div>
+                
+                <div class="control-item">
+                    <label>⚡ Электричество (руб/кВтч)</label>
+                    <input type="number" id="electricity_rub" value="6.2" step="0.1">
+                    <div class="help">Тариф для Hash2Cash</div>
+                </div>
+                
+                <div class="control-item">
+                    <label>📈 Рост difficulty (%/год)</label>
+                    <input type="number" id="difficulty_growth" value="47.28" step="1">
+                    <div class="help">Из вашего App.jsx: 47.28%</div>
+                </div>
+                
+                <div class="control-item">
+                    <label>💵 Курс USD/RUB</label>
+                    <input type="number" id="usd_rub" value="82" step="1">
+                    <div class="help">Текущий курс доллара</div>
+                </div>
+            </div>
+            
+            <div style="text-align: center;">
+                <button class="update-btn" onclick="calculate()">🔄 Пересчитать</button>
+            </div>
+        </div>
+
+        <div class="results">
+            <h2 class="section-title">📊 Результаты сравнения</h2>
+            
+            <div class="comparison-cards">
+                <div class="card gomining">
+                    <h2>GoMining ⛏️</h2>
+                    <div class="metric-row">
+                        <span class="metric-label">Хешрейт за инвестицию:</span>
+                        <span class="metric-value" id="gm_hashrate">37 TH</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Доход год 1:</span>
+                        <span class="metric-value" id="gm_year1">$414</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Доход год 2:</span>
+                        <span class="metric-value" id="gm_year2">$218</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Доход год 3:</span>
+                        <span class="metric-value" id="gm_year3">$115</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Апгрейды:</span>
+                        <span class="metric-value negative" id="gm_upgrades">-$0</span>
+                    </div>
+                    <div class="metric-row" style="background: rgba(255,255,255,0.4); margin-top: 20px;">
+                        <span class="metric-label">ИТОГО за 3 года:</span>
+                        <span class="metric-value" id="gm_total">$747</span>
+                    </div>
+                    <div class="metric-row" style="background: rgba(255,255,255,0.4);">
+                        <span class="metric-label">ROI:</span>
+                        <span class="metric-value" id="gm_roi">52.1%</span>
+                    </div>
+                </div>
+
+                <div class="card hash2cash">
+                    <h2>Hash2Cash 💎</h2>
+                    <div class="metric-row">
+                        <span class="metric-label">Хешрейт за инвестицию:</span>
+                        <span class="metric-value" id="h2c_hashrate">40 TH</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Доход год 1:</span>
+                        <span class="metric-value" id="h2c_year1">$358</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Доход год 2:</span>
+                        <span class="metric-value" id="h2c_year2">$189</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Доход год 3:</span>
+                        <span class="metric-value" id="h2c_year3">$100</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Апгрейды:</span>
+                        <span class="metric-value positive" id="h2c_upgrades">$0</span>
+                    </div>
+                    <div class="metric-row" style="background: rgba(255,255,255,0.4); margin-top: 20px;">
+                        <span class="metric-label">ИТОГО за 3 года:</span>
+                        <span class="metric-value" id="h2c_total">$647</span>
+                    </div>
+                    <div class="metric-row" style="background: rgba(255,255,255,0.4);">
+                        <span class="metric-label">ROI:</span>
+                        <span class="metric-value" id="h2c_roi">64.7%</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="winner" style="text-align: center; padding: 30px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border-radius: 15px; font-size: 1.5em; margin: 30px 0;">
+                🏆 Hash2Cash выигрывает: +12.6 п.п.
+            </div>
+
+            <!-- Detailed breakdown -->
+            <h2 class="section-title">📋 Детальная разбивка</h2>
+            <table id="breakdown-table">
+                <thead>
+                    <tr>
+                        <th>Параметр</th>
+                        <th>Год 1</th>
+                        <th>Год 2</th>
+                        <th>Год 3</th>
+                    </tr>
+                </thead>
+                <tbody id="breakdown-body">
+                    <!-- Заполняется JS -->
+                </tbody>
+            </table>
+
+            <!-- Assumptions -->
+            <h2 class="section-title">⚙️ Допущения и формулы</h2>
+            <div style="background: #f9fafb; padding: 25px; border-radius: 10px; margin: 20px 0;">
+                <h4 style="color: #667eea; margin-bottom: 15px;">GoMining:</h4>
+                <ul style="margin-left: 20px; line-height: 1.8;">
+                    <li>Цена: $27/TH</li>
+                    <li>Скидка на ЭЭ: -20% (через токен GOMINING)</li>
+                    <li>Эффективность: 15 W/TH</li>
+                    <li>Апгрейды: $0 (без апгрейдов для честности)</li>
+                    <li>Реферальная: Нет</li>
+                </ul>
+                
+                <h4 style="color: #667eea; margin: 20px 0 15px 0;">Hash2Cash:</h4>
+                <ul style="margin-left: 20px; line-height: 1.8;">
+                    <li>Цена: $25/TH</li>
+                    <li>Скидка на ЭЭ: Нет</li>
+                    <li>Эффективность: 15 W/TH</li>
+                    <li>Апгрейды: Нет</li>
+                    <li>Реферальная: 5% от майнинга (3 реферала с 100 TH каждый)</li>
+                </ul>
+
+                <h4 style="color: #667eea; margin: 20px 0 15px 0;">Формулы (из вашего кода):</h4>
+                <div style="background: #1e293b; color: #e2e8f0; padding: 15px; border-radius: 8px; font-family: 'Courier New', monospace; font-size: 0.95em;">
+                    <div>// Падение дохода из-за difficulty (App.jsx:194)</div>
+                    <div>factor[year] = Math.pow(1 - difficulty_growth/100, year - 1)</div>
+                    <div style="margin-top: 10px;">// Доход за год:</div>
+                    <div>revenue = btc_per_th_day × hashrate × btc_price × 365 × factor</div>
+                    <div style="margin-top: 10px;">// Электричество:</div>
+                    <div>ee_cost = (15W / 1000 × 24h × ee_rub) / usd_rub</div>
+                    <div>ee_year = ee_cost × hashrate × 365</div>
+                    <div style="margin-top: 10px;">// Чистый доход:</div>
+                    <div>net = max(0, revenue - ee_year)</div>
+                    <div style="margin-top: 10px; color: #10b981;">// max(0, ...) = если убыток, выплата $0 (не минус)</div>
+                </div>
+            </div>
+        </div>
+
+        <footer style="text-align: center; padding: 30px; background: #1e3c72; color: white;">
+            <p>💻 Формулы из: src/App.jsx + code/h2c_core/ThsService.js</p>
+            <p style="margin-top: 10px;">🔢 Все расчеты обновляются в реальном времени</p>
+        </footer>
+    </div>
+
+    <script>
+        function calculate() {
+            // Получить значения
+            const investment = parseFloat(document.getElementById('investment').value);
+            const btcPerTH = parseFloat(document.getElementById('btc_per_th').value);
+            const btcPrice = parseFloat(document.getElementById('btc_price').value);
+            const eeRub = parseFloat(document.getElementById('electricity_rub').value);
+            const diffGrowth = parseFloat(document.getElementById('difficulty_growth').value);
+            const usdRub = parseFloat(document.getElementById('usd_rub').value);
+
+            // GoMining параметры
+            const GM = {
+                pricePerTH: 27,
+                hashrate: Math.floor(investment / 27),
+                utilityTokens: 1000,
+                utilityTokensCost: 420,
+                eeDiscount: 0.20,
+                efficiency: 15
+            };
+
+            // Hash2Cash параметры
+            const H2C = {
+                pricePerTH: 25,
+                hashrate: Math.floor(investment / 25),
+                eeDiscount: 0,
+                efficiency: 15,
+                refPercent: 0.05,
+                refFriends: 3,
+                refHashrate: 100
+            };
+
+            // Расчет по годам
+            const years = [1, 2, 3];
+            const results = {
+                gm: { years: [], total: 0, upgrades: 0 },
+                h2c: { years: [], total: 0, upgrades: 0 }
+            };
+
+            // Электричество в день
+            const eePerTHDay = (GM.efficiency / 1000 * 24 * eeRub) / usdRub;
+
+            years.forEach(year => {
+                // Difficulty фактор (из App.jsx:194)
+                const factor = Math.pow(1 - diffGrowth / 100, year - 1);
+
+                // === GoMining ===
+                const gmMiningPerDay = btcPerTH * GM.hashrate * btcPrice * factor;
+                const gmEEPerDay = eePerTHDay * GM.hashrate * (1 - GM.eeDiscount);
+                const gmNetPerDay = Math.max(0, gmMiningPerDay - gmEEPerDay);
+                const gmYearIncome = gmNetPerDay * 365;
+
+                // === Hash2Cash ===
+                const h2cMiningPerDay = btcPerTH * H2C.hashrate * btcPrice * factor;
+                const h2cEEPerDay = eePerTHDay * H2C.hashrate;
+                const h2cNetMining = Math.max(0, h2cMiningPerDay - h2cEEPerDay);
+                
+                // Реферальный доход
+                const refMiningPerDay = btcPerTH * H2C.refFriends * H2C.refHashrate * btcPrice * factor;
+                const refBonus = refMiningPerDay * H2C.refPercent;
+                
+                const h2cNetPerDay = h2cNetMining + refBonus;
+                const h2cYearIncome = h2cNetPerDay * 365;
+
+                results.gm.years.push(gmYearIncome);
+                results.h2c.years.push(h2cYearIncome);
+            });
+
+            results.gm.total = results.gm.years.reduce((a, b) => a + b, 0);
+            results.h2c.total = results.h2c.years.reduce((a, b) => a + b, 0);
+
+            // GoMining с учетом токенов
+            const gmInvested = investment + GM.utilityTokensCost;
+            const gmROI = ((results.gm.total) / gmInvested * 100).toFixed(1);
+
+            // Hash2Cash
+            const h2cInvested = investment;
+            const h2cROI = ((results.h2c.total) / h2cInvested * 100).toFixed(1);
+
+            // Обновить UI
+            document.getElementById('gm_hashrate').textContent = GM.hashrate + ' TH';
+            document.getElementById('gm_year1').textContent = '$' + Math.round(results.gm.years[0]);
+            document.getElementById('gm_year2').textContent = '$' + Math.round(results.gm.years[1]);
+            document.getElementById('gm_year3').textContent = '$' + Math.round(results.gm.years[2]);
+            document.getElementById('gm_upgrades').textContent = '-$' + results.gm.upgrades;
+            document.getElementById('gm_total').textContent = '$' + Math.round(results.gm.total);
+            document.getElementById('gm_roi').textContent = gmROI + '%';
+
+            document.getElementById('h2c_hashrate').textContent = H2C.hashrate + ' TH';
+            document.getElementById('h2c_year1').textContent = '$' + Math.round(results.h2c.years[0]);
+            document.getElementById('h2c_year2').textContent = '$' + Math.round(results.h2c.years[1]);
+            document.getElementById('h2c_year3').textContent = '$' + Math.round(results.h2c.years[2]);
+            document.getElementById('h2c_upgrades').textContent = '$' + results.h2c.upgrades;
+            document.getElementById('h2c_total').textContent = '$' + Math.round(results.h2c.total);
+            document.getElementById('h2c_roi').textContent = h2cROI + '%';
+
+            // Победитель
+            const diff = parseFloat(h2cROI) - parseFloat(gmROI);
+            const winner = document.getElementById('winner');
+            if (diff > 0) {
+                winner.innerHTML = `🏆 Hash2Cash выигрывает: +${diff.toFixed(1)} п.п. ROI`;
+                winner.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+            } else {
+                winner.innerHTML = `🏆 GoMining выигрывает: +${Math.abs(diff).toFixed(1)} п.п. ROI`;
+                winner.style.background = 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)';
+            }
+
+            // Таблица
+            updateBreakdownTable(results, btcPerTH, btcPrice, eePerTHDay, diffGrowth, GM, H2C);
+        }
+
+        function updateBreakdownTable(results, btcPerTH, btcPrice, eePerTHDay, diffGrowth, GM, H2C) {
+            const tbody = document.getElementById('breakdown-body');
+            tbody.innerHTML = '';
+
+            const years = [1, 2, 3];
+            
+            years.forEach(year => {
+                const factor = Math.pow(1 - diffGrowth / 100, year - 1);
+                const factorPct = (factor * 100).toFixed(1);
+
+                // GoMining
+                const gmMining = (btcPerTH * GM.hashrate * btcPrice * factor * 365).toFixed(0);
+                const gmEE = (eePerTHDay * GM.hashrate * (1 - GM.eeDiscount) * 365).toFixed(0);
+                const gmNet = Math.max(0, gmMining - gmEE).toFixed(0);
+
+                // Hash2Cash
+                const h2cMining = (btcPerTH * H2C.hashrate * btcPrice * factor * 365).toFixed(0);
+                const h2cEE = (eePerTHDay * H2C.hashrate * 365).toFixed(0);
+                const h2cNetMining = Math.max(0, h2cMining - h2cEE);
+                const h2cRef = (btcPerTH * H2C.refFriends * H2C.refHashrate * btcPrice * factor * H2C.refPercent * 365).toFixed(0);
+                const h2cNet = (parseFloat(h2cNetMining) + parseFloat(h2cRef)).toFixed(0);
+
+                tbody.innerHTML += `
+                    <tr style="background: #e0e7ff;">
+                        <td colspan="4"><strong>ГОД ${year} (difficulty фактор: ${factorPct}%)</strong></td>
+                    </tr>
+                    <tr>
+                        <td>GoMining - Майнинг доход</td>
+                        <td>$${gmMining}</td>
+                        <td>-</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>GoMining - Электричество</td>
+                        <td class="negative">-$${gmEE}</td>
+                        <td>-</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>GoMining - Чистый доход</td>
+                        <td class="positive"><strong>$${gmNet}</strong></td>
+                        <td>-</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td colspan="4" style="height: 10px;"></td>
+                    </tr>
+                    <tr>
+                        <td>Hash2Cash - Майнинг доход</td>
+                        <td>$${h2cMining}</td>
+                        <td>-</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>Hash2Cash - Электричество</td>
+                        <td class="negative">-$${h2cEE}</td>
+                        <td>-</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>Hash2Cash - Реферальный бонус</td>
+                        <td class="positive">+$${h2cRef}</td>
+                        <td>-</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>Hash2Cash - Чистый доход</td>
+                        <td class="positive"><strong>$${h2cNet}</strong></td>
+                        <td>-</td>
+                        <td>-</td>
+                    </tr>
+                `;
+            });
+        }
+
+        // Автоматический расчет при загрузке
+        window.addEventListener('load', calculate);
+
+        // Автоматический пересчет при изменении значений
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('input', calculate);
+        });
+    </script>
+</body>
+</html>
+
